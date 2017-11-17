@@ -1,0 +1,38 @@
+#!/usr/bin/expect -f
+
+# ssh自动执行命令
+
+
+# 参数判断
+if { $argc < 3 } {
+    send_error "Usage: ./autossh password \[user@]host cmd \[port] \[timeout]\n"
+    exit 1
+}
+
+# 参数设置
+set password [lindex $argv 0]
+set userhost [lindex $argv 1]
+set cmd [lindex $argv 2]
+if { $argc > 3 } {
+    set port [lindex $argv 3]
+} else {
+    set port 22
+}
+if { $argc > 4 } {
+    set timeout [lindex $argv 4]
+} else {
+    set timeout 30
+}
+
+# 启动ssh进程
+spawn ssh -p $port -o ConnectTimeout=$timeout $userhost "source /etc/profile;source ~/.bash_profile;$cmd;echo $?"
+
+# 验证密码
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$password\r"; exp_continue }
+    "ould not resolve" { exit 1 }
+    "denied" { exit 2 }
+    -re "\n(\[0-9]\[0-9]*)\r" { exit $expect_out(0,string) }
+    eof { exit }
+}

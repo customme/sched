@@ -1,0 +1,8 @@
+# 测试环境
+
+
+# 元数据库配置
+META_DB_HOST=192.168.1.205
+META_DB_PORT=3306
+META_DB_USER=root
+META_DB_PASSWD=mysql
