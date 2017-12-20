@@ -796,12 +796,18 @@ function main()
     log_fn init
 
     # 生成aid
-    [[ $aid_count ]] && log_fn gen_aid
+    if [[ $aid_count ]]; then
+        log_fn gen_aid
+    fi
 
     # 生成访问日志
-    [[ $visit_gen ]] && log_fn gen_visit
+    if [[ $visit_gen ]]; then
+        log_fn gen_visit
+    fi
 
     # 校验访问日志
-    [[ $visit_check ]] && log_fn check_visit
+    if [[ $visit_check ]]; then
+        log_fn check_visit
+    fi
 }
 main "$@"

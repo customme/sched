@@ -239,13 +239,17 @@ function gen_active1()
 
     # 当天新增
     local file_active=$DATADIR/$prod_id/active.$the_date
-    cp -f $DATADIR/$prod_id/new.$the_date $file_active
+    if [[ -s $DATADIR/$prod_id/new.$the_date ]]; then
+        cp -f $DATADIR/$prod_id/new.$the_date $file_active
+    else
+        > $file_active
+    fi
 
     # 产品留存率
     local keep_pct=(`get_keep_pct`)
 
     # 次日留存
-    if [[ $date_diff -ge 1 ]]; then
+    if [[ $date_diff -ge 1 && -s $DATADIR/$prod_id/new.$date1 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date1 | wc -l`
         local count=`echo ${keep_pct[0]} $total | awk 'BEGIN{
             srand()
@@ -260,7 +264,7 @@ function gen_active1()
     fi
 
     # 2日留存
-    if [[ $date_diff -ge 2 ]]; then
+    if [[ $date_diff -ge 2 && -s $DATADIR/$prod_id/new.$date2 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date2 | wc -l`
         local count=`echo ${keep_pct[1]} $total | awk 'BEGIN{
             srand()
@@ -275,7 +279,7 @@ function gen_active1()
     fi
 
     # 3日留存
-    if [[ $date_diff -ge 3 ]]; then
+    if [[ $date_diff -ge 3 && -s $DATADIR/$prod_id/new.$date3 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date3 | wc -l`
         local count=`echo ${keep_pct[2]} $total | awk 'BEGIN{
             srand()
@@ -290,7 +294,7 @@ function gen_active1()
     fi
 
     # 4日留存
-    if [[ $date_diff -ge 4 ]]; then
+    if [[ $date_diff -ge 4 && -s $DATADIR/$prod_id/new.$date4 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date4 | wc -l`
         local count=`echo ${keep_pct[3]} $total | awk 'BEGIN{
             srand()
@@ -305,7 +309,7 @@ function gen_active1()
     fi
 
     # 5日留存
-    if [[ $date_diff -ge 5 ]]; then
+    if [[ $date_diff -ge 5 && -s $DATADIR/$prod_id/new.$date5 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date5 | wc -l`
         local count=`echo ${keep_pct[4]} $total | awk 'BEGIN{
             srand()
@@ -320,7 +324,7 @@ function gen_active1()
     fi
 
     # 6日留存
-    if [[ $date_diff -ge 6 ]]; then
+    if [[ $date_diff -ge 6 && -s $DATADIR/$prod_id/new.$date6 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date6 | wc -l`
         local count=`echo ${keep_pct[5]} $total | awk 'BEGIN{
             srand()
@@ -335,7 +339,7 @@ function gen_active1()
     fi
 
     # 7日留存
-    if [[ $date_diff -ge 7 ]]; then
+    if [[ $date_diff -ge 7 && -s $DATADIR/$prod_id/new.$date7 ]]; then
         local total=`cat $DATADIR/$prod_id/new.$date7 | wc -l`
         local count=`echo ${keep_pct[6]} $total | awk 'BEGIN{
             srand()
@@ -356,7 +360,9 @@ function gen_active1()
             date8=$min_date
         fi
         range_date $date8 $date7 | sed '$d' | while read the_date1; do
-            cat $DATADIR/$prod_id/new.$the_date1
+            if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
+                cat $DATADIR/$prod_id/new.$the_date1
+            fi
         done > $file_active1
 
         local total=`cat $file_active1 | wc -l`
@@ -379,7 +385,9 @@ function gen_active1()
             date15=$min_date
         fi
         range_date $date15 $date14 | sed '$d' | while read the_date1; do
-            cat $DATADIR/$prod_id/new.$the_date1
+            if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
+                cat $DATADIR/$prod_id/new.$the_date1
+            fi
         done > $file_active1
 
         local total=`cat $file_active1 | wc -l`
@@ -402,7 +410,9 @@ function gen_active1()
             date31=$min_date
         fi
         range_date $date31 $date30 | sed '$d' | while read the_date1; do
-            cat $DATADIR/$prod_id/new.$the_date1
+            if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
+                cat $DATADIR/$prod_id/new.$the_date1
+            fi
         done > $file_active1
 
         local total=`cat $file_active1 | wc -l`
@@ -421,7 +431,9 @@ function gen_active1()
     # 60~日留存
     if [[ $date_diff -ge 61 ]]; then
         rand_days | while read the_date1; do
-            cat $DATADIR/$prod_id/new.$the_date1
+            if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
+                cat $DATADIR/$prod_id/new.$the_date1
+            fi
         done > $file_active1
 
         local total=`cat $file_active1 | wc -l`
@@ -501,8 +513,12 @@ function main()
 
     log_fn init
 
-    [[ $new_gen ]] && log_fn gen_new
+    if [[ $new_gen ]]; then
+        log_fn gen_new
+    fi
 
-    [[ $active_gen ]] && log_fn gen_active
+    if [[ $active_gen ]]; then
+        log_fn gen_active
+    fi
 }
 main "$@"

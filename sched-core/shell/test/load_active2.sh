@@ -72,8 +72,10 @@ function load_new()
     # 按天导入
     range_date $start_date $end_date | while read the_date; do
         the_file=$DATADIR/$prod_id/new.$the_date
-        log "Load file $the_file"
-        echo "LOAD DATA LOCAL INFILE '$the_file' INTO TABLE $table_new (aidid, cuscode, city) SET create_date = ${the_date//-/};" | exec_sql
+        if [[ -s $the_file ]]; then
+            log "Load file $the_file"
+            echo "LOAD DATA LOCAL INFILE '$the_file' INTO TABLE $table_new (aidid, cuscode, city) SET create_date = ${the_date//-/};" | exec_sql
+        fi
     done
 
     # 添加索引
@@ -119,11 +121,13 @@ function load_active()
         log "Load file $the_file"
 
         # 合并当天新增
-        awk 'BEGIN{
-            OFS="\t"
-        }{
-            print $1,"'${the_date//-/}'"
-        }' $DATADIR/$prod_id/new.$the_date >> $file_new
+        if [[ -s $DATADIR/$prod_id/new.$the_date ]]; then
+            awk 'BEGIN{
+                OFS="\t"
+            }{
+                print $1,"'${the_date//-/}'"
+            }' $DATADIR/$prod_id/new.$the_date >> $file_new
+        fi
 
         # 排序
         sort $file_new -o $file_new
