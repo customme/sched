@@ -208,6 +208,8 @@ function check()
                 update_task "run_status = 2"
                 run &
             fi
+        elif [[ $run_status -eq 2 ]]; then
+            log "The task($prod_id, $start_date, $end_date, $run_status) is running"
         else
             log "The task($prod_id, $start_date, $end_date, $run_status) is not ready yet"
         fi

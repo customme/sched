@@ -161,7 +161,11 @@ function agg_new()
       fact_count INT,
       PRIMARY KEY(create_date)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_01_new_$prod_id SELECT create_date, COUNT(1) FROM ${TP_NEW}$prod_id GROUP BY create_date;
+    REPLACE INTO ${TP_AGG}l_01_new_$prod_id
+    SELECT create_date, COUNT(1)
+    FROM ${TP_NEW}$prod_id
+    WHERE create_date >= ${start_date//-/} AND create_date <= ${end_date//-/}
+    GROUP BY create_date;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_02_new_$prod_id (
       create_date INT,
@@ -169,7 +173,11 @@ function agg_new()
       fact_count INT,
       PRIMARY KEY(create_date, cuscode)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_02_new_$prod_id SELECT create_date, cuscode, COUNT(1) FROM ${TP_NEW}$prod_id GROUP BY create_date, cuscode;
+    REPLACE INTO ${TP_AGG}l_02_new_$prod_id
+    SELECT create_date, cuscode, COUNT(1)
+    FROM ${TP_NEW}$prod_id
+    WHERE create_date >= ${start_date//-/} AND create_date <= ${end_date//-/}
+    GROUP BY create_date, cuscode;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_03_new_$prod_id (
       create_date INT,
@@ -177,7 +185,11 @@ function agg_new()
       fact_count INT,
       PRIMARY KEY(create_date, city)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_03_new_$prod_id SELECT create_date, city, COUNT(1) FROM ${TP_NEW}$prod_id GROUP BY create_date, city;
+    REPLACE INTO ${TP_AGG}l_03_new_$prod_id
+    SELECT create_date, city, COUNT(1)
+    FROM ${TP_NEW}$prod_id
+    WHERE create_date >= ${start_date//-/} AND create_date <= ${end_date//-/}
+    GROUP BY create_date, city;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_04_new_$prod_id (
       create_date INT,
@@ -186,7 +198,11 @@ function agg_new()
       fact_count INT,
       PRIMARY KEY(create_date, cuscode, city)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_04_new_$prod_id SELECT create_date, cuscode, city, COUNT(1) FROM ${TP_NEW}$prod_id GROUP BY create_date, cuscode, city;
+    REPLACE INTO ${TP_AGG}l_04_new_$prod_id
+    SELECT create_date, cuscode, city, COUNT(1)
+    FROM ${TP_NEW}$prod_id
+    WHERE create_date >= ${start_date//-/} AND create_date <= ${end_date//-/}
+    GROUP BY create_date, cuscode, city;
     " | exec_sql
 }
 
@@ -200,7 +216,11 @@ function agg_active()
       fact_count INT,
       PRIMARY KEY(active_date, create_date)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_01_active_$prod_id SELECT active_date, create_date, date_diff, COUNT(1) FROM ${TP_ACTIVE}$prod_id GROUP BY active_date, create_date;
+    REPLACE INTO ${TP_AGG}l_01_active_$prod_id
+    SELECT active_date, create_date, date_diff, COUNT(1)
+    FROM ${TP_ACTIVE}$prod_id
+    WHERE active_date >= ${start_date//-/} AND active_date <= ${end_date//-/}
+    GROUP BY active_date, create_date;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_02_active_$prod_id (
       active_date INT,
@@ -210,7 +230,11 @@ function agg_active()
       fact_count INT,
       PRIMARY KEY(active_date, create_date, cuscode)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_02_active_$prod_id SELECT active_date, create_date, date_diff, cuscode, COUNT(1) FROM ${TP_ACTIVE}$prod_id GROUP BY active_date, create_date, cuscode;
+    REPLACE INTO ${TP_AGG}l_02_active_$prod_id
+    SELECT active_date, create_date, date_diff, cuscode, COUNT(1)
+    FROM ${TP_ACTIVE}$prod_id
+    WHERE active_date >= ${start_date//-/} AND active_date <= ${end_date//-/}
+    GROUP BY active_date, create_date, cuscode;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_03_active_$prod_id (
       active_date INT,
@@ -220,7 +244,11 @@ function agg_active()
       fact_count INT,
       PRIMARY KEY(active_date, create_date, city)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_03_active_$prod_id SELECT active_date, create_date, date_diff, city, COUNT(1) FROM ${TP_ACTIVE}$prod_id GROUP BY active_date, create_date, city;
+    REPLACE INTO ${TP_AGG}l_03_active_$prod_id
+    SELECT active_date, create_date, date_diff, city, COUNT(1)
+    FROM ${TP_ACTIVE}$prod_id
+    WHERE active_date >= ${start_date//-/} AND active_date <= ${end_date//-/}
+    GROUP BY active_date, create_date, city;
 
     CREATE TABLE IF NOT EXISTS ${TP_AGG}l_04_active_$prod_id (
       active_date INT,
@@ -231,7 +259,11 @@ function agg_active()
       fact_count INT,
       PRIMARY KEY(active_date, create_date, cuscode, city)
     ) ENGINE=MyISAM;
-    REPLACE INTO ${TP_AGG}l_04_active_$prod_id SELECT active_date, create_date, date_diff, cuscode, city, COUNT(1) FROM ${TP_ACTIVE}$prod_id GROUP BY active_date, create_date, cuscode, city;
+    REPLACE INTO ${TP_AGG}l_04_active_$prod_id
+    SELECT active_date, create_date, date_diff, cuscode, city, COUNT(1)
+    FROM ${TP_ACTIVE}$prod_id
+    WHERE active_date >= ${start_date//-/} AND active_date <= ${end_date//-/}
+    GROUP BY active_date, create_date, cuscode, city;
     " | exec_sql
 }
 
