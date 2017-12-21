@@ -3,6 +3,9 @@
 # 自动检测任务并生成数据
 
 
+# 自身pid
+PID=$$
+
 MYSQL_HOST=localhost
 MYSQL_PORT=3308
 MYSQL_USER=root
@@ -27,6 +30,9 @@ function log()
 {
     echo "$(date +'%F %T.%N') [ $@ ]"
 }
+
+# 捕捉kill信号
+trap 'log "$0 is killed, pid: $PID, script will exit soon";bye=yes' TERM
 
 # 执行sql
 function exec_sql()
@@ -218,9 +224,22 @@ function check()
 
 # 循环检测
 while :; do
+    # 删除历史日志文件
+    for i in `seq 5`; do
+        ls -c $LOGDIR/*.$i 2> /dev/null | sed '1,30 d' | xargs -r rm -f
+    done
+
     # 检查可执行任务
     log "Check tasks"
     check
+
+    # 优雅退出
+    if [[ $bye ]]; then
+        while [[ -n `pstree $PID` ]]; do
+            sleep 1
+        done
+        break
+    fi
 
     # 休眠一段时间
     log "Sleep $CHECK_INTERVAL seconds"
