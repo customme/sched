@@ -184,23 +184,31 @@ function run()
     fi
 
     # 访问
-    if [[ $visit_status -eq 1 && ! `ps aux | grep "gen_data3-1\.sh -b $prod_id,$start_date,$end_date"` ]]; then
-        gen_visit &
+    if [[ $visit_status -eq 1 ]]; then
+        if [[ ! `ps aux | grep "gen_data3-1\.sh -b $prod_id,$start_date,$end_date"` ]]; then
+            gen_visit &
+        else
+            log "Another progress is running: gen_data3-1.sh -b $prod_id,$start_date,$end_date"
+        fi
     fi
 
     # 报表
-    if [[ $report_status -eq 1 && ! `ps aux | grep "sh load_active3\.sh $prod_id,$start_date,$end_date"` ]]; then
-        # 统计报表
-        log "Generate report"
-        sh load_active3.sh $prod_id $start_date $end_date > $LOGDIR/${prod_id}.${start_date}.log.5 2> $LOGDIR/${prod_id}.${start_date}.err.5
-        if [[ $? -eq 0 ]]; then
-            # 更新报表生成时间
-            update_task "report_time = NOW()"
-            # 更新任务状态
-            update_task "run_status = 3" "AND visit_time > 0 AND report_time > 0"
+    if [[ $report_status -eq 1 ]]; then
+        if [[ ! `ps aux | grep "sh load_active3\.sh $prod_id $start_date $end_date"` ]]; then
+            # 统计报表
+            log "Generate report"
+            sh load_active3.sh $prod_id $start_date $end_date > $LOGDIR/${prod_id}.${start_date}.log.5 2> $LOGDIR/${prod_id}.${start_date}.err.5
+            if [[ $? -eq 0 ]]; then
+                # 更新报表生成时间
+                update_task "report_time = NOW()"
+                # 更新任务状态
+                update_task "run_status = 3" "AND visit_time > 0 AND report_time > 0"
+            else
+                error_msg=`sed "s/\('\|\"\)/\\\\\1/g" $LOGDIR/${prod_id}.${start_date}.err.5 | awk '{printf("%s\\\n",$0)}'`
+                update_task "run_status = 4, error_msg = CONCAT(IFNULL(error_msg,''), '\nGenerate report failed\n', '$error_msg')"
+            fi
         else
-            error_msg=`sed "s/\('\|\"\)/\\\\\1/g" $LOGDIR/${prod_id}.${start_date}.err.5 | awk '{printf("%s\\\n",$0)}'`
-            update_task "run_status = 4, error_msg = CONCAT(IFNULL(error_msg,''), '\nGenerate report failed\n', '$error_msg')"
+            log "Another progress is running: sh load_active3.sh $prod_id $start_date $end_date"
         fi
     fi
 }
