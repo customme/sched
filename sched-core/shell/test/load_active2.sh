@@ -38,8 +38,8 @@ function log_fn()
 # 生成日期序列
 function range_date()
 {
-    local date_begin="$1"
-    local date_end="$2"
+    local date_begin=`date +%Y%m%d -d "$1"`
+    local date_end=`date +%Y%m%d -d "$2"`
 
     while [[ $date_begin -le $date_end ]]; do
         date +%F -d "$date_begin"

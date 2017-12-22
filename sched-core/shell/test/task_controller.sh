@@ -87,6 +87,7 @@ function update_task()
 function gen_visit()
 {
     # 生成访问
+    log "Generate visit"
     sh gen_data3-1.sh -b $prod_id,$start_date,$end_date > $LOGDIR/${prod_id}.${start_date}.log.4 2> $LOGDIR/${prod_id}.${start_date}.err.4
     if [[ $? -eq 0 ]]; then
         # 更新访问生成时间
@@ -135,6 +136,7 @@ function run()
         diff=$((max_id + new_cnt - aid_cnt))
         if [[ $diff -gt 0 ]]; then
             # 生成android id
+            log "Generate android id"
             sh gen_data3-1.sh -a $diff > $LOGDIR/${prod_id}.${start_date}.log.1 2> $LOGDIR/${prod_id}.${start_date}.err.1
             if [[ $? -gt 0 ]]; then
                 error_msg=`sed "s/\('\|\"\)/\\\\\1/g" $LOGDIR/${prod_id}.${start_date}.err.1 | awk '{printf("%s\\\n",$0)}'`
@@ -146,6 +148,7 @@ function run()
         fi
 
         # 生成新增
+        log "Generate new"
         sh gen_data3.sh -a $prod_id,$start_date,$end_date > $LOGDIR/${prod_id}.${start_date}.log.2 2> $LOGDIR/${prod_id}.${start_date}.err.2
         if [[ $? -eq 0 ]]; then
             # 更新新增生成时间
@@ -166,6 +169,7 @@ function run()
     # 活跃
     if [[ $active_status -eq 1 ]]; then
         # 生成活跃
+        log "Generate active"
         sh gen_data3.sh -b $prod_id,$start_date,$end_date > $LOGDIR/${prod_id}.${start_date}.log.3 2> $LOGDIR/${prod_id}.${start_date}.err.3
         if [[ $? -eq 0 ]]; then
             # 更新活跃生成时间
@@ -187,6 +191,7 @@ function run()
     # 报表
     if [[ $report_status -eq 1 && ! `ps aux | grep "sh load_active3\.sh $prod_id,$start_date,$end_date"` ]]; then
         # 统计报表
+        log "Generate report"
         sh load_active3.sh $prod_id $start_date $end_date > $LOGDIR/${prod_id}.${start_date}.log.5 2> $LOGDIR/${prod_id}.${start_date}.err.5
         if [[ $? -eq 0 ]]; then
             # 更新报表生成时间
@@ -222,9 +227,30 @@ function check()
     done
 }
 
+# 优雅退出
+function graceful_exit()
+{
+    if [[ $bye ]]; then
+        log "Wait subprocess to complete"
+        pst=`pstree $PID`
+        while [[ "$pst" != "sh---pstree" ]]; do
+            sleep 1
+            pst=`pstree $PID`
+        done
+
+        log "$0 exit"
+        break
+    fi
+}
+
 # 循环检测
+log "$0 start running, pid: $PID"
 while :; do
+    # 优雅退出
+    graceful_exit
+
     # 删除历史日志文件
+    log "Delete history logs"
     for i in `seq 5`; do
         ls -c $LOGDIR/*.$i 2> /dev/null | sed '1,30 d' | xargs -r rm -f
     done
@@ -234,12 +260,7 @@ while :; do
     check
 
     # 优雅退出
-    if [[ $bye ]]; then
-        while [[ -n `pstree $PID` ]]; do
-            sleep 1
-        done
-        break
-    fi
+    graceful_exit
 
     # 休眠一段时间
     log "Sleep $CHECK_INTERVAL seconds"
