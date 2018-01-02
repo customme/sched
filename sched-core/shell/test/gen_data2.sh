@@ -11,14 +11,14 @@ MYSQL_DB=bostar
 MYSQL_CHARSET=utf8
 
 # 产品ID 产品名
-PRODS="adv_n 砾点广告平台
-compass_n 智能指南针
-file_n 快致文件管理
-light_n 强光手电筒
-recorder_n 随身录音机
-search_n 立引搜索
-shop_n 必购商城
-weather_n 实时天气"
+PRODS="adv_n	砾点广告平台
+compass_n	智能指南针
+file_n	快致文件管理
+light_n	强光手电筒
+recorder_n	随身录音机
+search_n	立引搜索
+shop_n	必购商城
+weather_n	实时天气"
 
 # 表名
 # 新增量
@@ -82,9 +82,9 @@ function init()
 # 获取新增量
 function get_new_cnt()
 {
-    local file_new_cnt=$DATADIR/$prod_id/new_cnt
+    local file_new_cnt=$DATADIR/$prod_id/new_cnt.$start_date
     if [[ ! -s $file_new_cnt ]]; then
-        echo "SELECT stattime, cuscode, adduser FROM $TBL_NEW_CNT WHERE proname = '$prod_name' AND adduser > 0 ORDER BY stattime;" | exec_sql > $file_new_cnt
+        echo "SELECT stattime, cuscode, adduser FROM $TBL_NEW_CNT WHERE proname = '$prod_name' AND adduser > 0 AND stattime >= '$start_date' AND stattime <= '$end_date' ORDER BY stattime;" | exec_sql > $file_new_cnt
     fi
 
     awk -F '\t' 'BEGIN{OFS=FS} $1 == "'$the_date'" {print $2,$3}' $file_new_cnt
@@ -189,13 +189,12 @@ function gen_new()
     local file_new1=$TMPDIR/$prod_id/new1
     local file_city_rng=$TMPDIR/$prod_id/city_range
 
-    range_date $min_date $end_date | while read the_date; do
+    range_date $start_date $end_date | while read the_date; do
         file_new=$DATADIR/$prod_id/new.$the_date
-        if [[ ! -s $file_new ]]; then
-            # 生成一天新增
-            log "Generate new for day $the_date"
-            gen_new1
-        fi
+
+        # 生成一天新增
+        log "Generate new for day $the_date"
+        gen_new1
     done
 
     # 删除临时文件
@@ -508,7 +507,9 @@ function main()
 
     set -e
 
-    prod_name=`echo "$PRODS" | grep "^$prod_id " | awk '{print $2}'`
+    start_date=`date +%F -d "$start_date"`
+    end_date=`date +%F -d "$end_date"`
+    prod_name=`echo "$PRODS" | awk '$1 == "'$prod_id'" {print $2}'`
     min_date=`echo "SELECT MIN(stattime) FROM $TBL_NEW_CNT WHERE proname = '$prod_name';" | exec_sql`
 
     log_fn init

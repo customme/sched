@@ -55,7 +55,7 @@ function exec_sql()
 function export_data()
 {
     if [[ ! -s $file_ad_cnt ]]; then
-        echo "SELECT stat_date, advertiser_id, ad_id, showcnt, clickcnt FROM t_advertise_cnt;" | exec_sql > $file_ad_cnt
+        echo "SELECT stat_date, advertiser_id, ad_id, showcnt, clickcnt FROM t_advertise_cnt WHERE stat_date >= '$start_date' AND stat_date <= '$end_date';" | exec_sql > $file_ad_cnt
     fi
 }
 
@@ -123,10 +123,10 @@ function gen_ad()
 function main()
 {
     prod_id="$1"
-    start_date="$2"
-    end_date="$3"
+    start_date=`date +%F -d "$2"`
+    end_date=`date +%F -d "$3"`
 
-    file_ad_cnt=$DATADIR/$prod_id/ad_cnt
+    file_ad_cnt=$DATADIR/$prod_id/ad_cnt.$start_date
 
     file_ad_show1=$TMPDIR/$prod_id/ad_show1
     file_ad_show2=$TMPDIR/$prod_id/ad_show2
