@@ -10,6 +10,12 @@ tar_dirs=/work/data/logs/fans_n,social_n,/work/www/shell/logs
 CHECK_INTERVAL=3600
 
 
+# 记录日志
+function log()
+{
+    echo "$(date +'%F %T.%N') [ $@ ]"
+}
+
 function check()
 {
     for dir in `echo "$tar_dirs" | tr ',' '\n'`; do
@@ -22,18 +28,21 @@ function check()
     xargs -r -I {} find {} -name "*\.[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" |
     while read file; do
         # 最后修改时间
-        modify_time=`stat $file | awk '$1 ~ /Modify/ {print $2}'`
+        modify_date=`stat $file | awk '$1 ~ /Modify/ {print $2}'`
+        modify_time=`stat $file | awk '$1 ~ /Modify/ {print substr($3,1,5)}'`
+        # 数据日期
+        the_date=`echo $file | awk -F '.' '{print $NF}'`
 
-        # 伪造时间
-        fake_time=`echo $file | awk -F '.' 'BEGIN{
-            srand()
-        }{
-            second=int(rand() * 60)
-            printf("%s 23:59:%02d",$NF,second)
-        }'`
-        #echo -e "$file\t$modify_time\t$fake_time"
+        if [[ "$modify_date" != "$the_date" || "$modify_time" != "23:59" ]]; then
+            # 伪造时间
+            fake_time=`echo $the_date | awk 'BEGIN{
+                srand()
+            }{
+                second=int(rand() * 60)
+                printf("%s 23:59:%02d",$1,second)
+            }'`
 
-        if [[ "$modify_time" != "$fake_time" ]]; then
+            echo -e "$file\t$modify_date $modify_time\t$fake_time"
             touch -m -d "$fake_time" $file
         fi
     done #| awk -F '[.\t ]' '{if($2 != $3) print $2,$3}'
@@ -49,8 +58,10 @@ function main()
     else
         # 循环扫描
         while :; do
+            log "Scan files"
             check
 
+            log "Sleep $CHECK_INTERVAL"
             sleep $CHECK_INTERVAL
         done
     fi
