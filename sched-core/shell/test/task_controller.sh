@@ -109,14 +109,16 @@ function run()
     if [[ $new_status -eq 1 && $new_cnt -gt 0 ]]; then
         # 检查android id是否够用，如果不够，就先生成android id
 
+        # 随机休眠，避免同时创建锁
+        echo $RANDOM | head -c 1 | xargs sleep
+
         # 检查生成android id的锁是否存在
         while test -f $DATADIR/aid.lock; do
-            log "Wait for lock ($prod_id, $start_date $end_date)"
-            sleep 1
+            log "Wait for lock ($prod_id, $start_date, $end_date)"
+            echo $RANDOM | head -c 1 | xargs sleep
         done
         # 创建锁
-        log "Create lock ($prod_id, $start_date $end_date)"
-        touch $DATADIR/aid.lock
+        log "Create lock ($prod_id, $start_date, $end_date)" | tee $DATADIR/aid.lock
 
         # 获取android id个数
         if [[ -f $DATADIR/android_id ]]; then
@@ -162,7 +164,7 @@ function run()
         fi
 
         # 释放锁
-        log "Release lock ($prod_id, $start_date $end_date)"
+        log "Release lock ($prod_id, $start_date, $end_date)"
         rm -f $DATADIR/aid.lock
     fi
 
