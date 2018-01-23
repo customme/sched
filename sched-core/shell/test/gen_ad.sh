@@ -66,10 +66,29 @@ function gen_ad()
 
     sed '/ 23:57/,$d' $file_visit > $file_ad_show1
 
+    # 补充访问日志
+    local visit_count=`wc -l $file_ad_show1 | awk '{print $1}'`
+    local max_count=`awk '$1 == "'$the_date'" {print $4}' $file_ad_cnt | sort -nr | head -n 1`
+    local diff_count=`expr $max_count - $visit_count`
+    if [[ $diff_count -gt 0 ]]; then
+        log "Add visit log $diff_count"
+        cp -f $file_ad_show1 $file_ad_show2
+        local mom_count=`expr $diff_count / $visit_count`
+        local mod_count=`expr $diff_count % $visit_count`
+        for i in `seq $mom_count`; do
+            cat $file_ad_show1 >> $file_ad_show2
+        done
+        if [[ $mod_count -gt 0 ]]; then
+            sort -R $file_ad_show1 | head -n $mod_count >> $file_ad_show2
+        fi
+    else
+        mv -f $file_ad_show1 $file_ad_show2
+    fi
+
     awk '$1 == "'$the_date'"' $file_ad_cnt | while read stat_date advertiser_id ad_id showcnt clickcnt; do
         # 生成展示
         log "Gen ad show log $showcnt"
-        sort -R $file_ad_show1 | head -n $showcnt | awk -F '\t' 'BEGIN{
+        sort -R $file_ad_show2 | head -n $showcnt | awk -F '\t' 'BEGIN{
             OFS=FS
             srand()
         }{
@@ -86,11 +105,11 @@ function gen_ad()
             }
 
             print $1,$2,$3,$4,show_time,1,"'$ad_id'","'$advertiser_id'"
-        }' > $file_ad_show2
+        }' > $file_ad_show3
 
         # 生成点击
         log "Gen ad click log $clickcnt"
-        grep -v " 23:59" $file_ad_show2 | sort -R | head -n $clickcnt | awk -F '\t' 'BEGIN{
+        grep -v " 23:59" $file_ad_show3 | sort -R | head -n $clickcnt | awk -F '\t' 'BEGIN{
             OFS=FS
             srand()
         }{
@@ -110,7 +129,7 @@ function gen_ad()
             print $1,$2,$3,$4,click_time,2,$7,$8
         }' >> $file_ad_click
 
-        cat $file_ad_show2 >> $file_ad_show
+        cat $file_ad_show3 >> $file_ad_show
     done
 
     # 按展示/点击时间排序
@@ -130,6 +149,7 @@ function main()
 
     file_ad_show1=$TMPDIR/$prod_id/ad_show1
     file_ad_show2=$TMPDIR/$prod_id/ad_show2
+    file_ad_show3=$TMPDIR/$prod_id/ad_show3
 
     mkdir -p $TMPDIR/$prod_id
 
@@ -146,6 +166,6 @@ function main()
     done
 
     # 删除临时文件
-    rm -f $file_ad_show1 $file_ad_show2
+    rm -f $file_ad_show1 $file_ad_show2 $file_ad_show3
 }
 main "$@"
