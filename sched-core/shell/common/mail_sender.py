@@ -16,8 +16,8 @@ smtp_host = "smtp.9zhitx.com"
 # 内网
 smtp_host = "10.10.10.7"
 smtp_port = 25
-mail_user = "zhangchao@9zhitx.com"
-mail_passwd = "q12345"
+mail_user = "datacenter@9zhitx.com"
+mail_passwd = "jztxdatacenter"
 timeout = 60
 
 

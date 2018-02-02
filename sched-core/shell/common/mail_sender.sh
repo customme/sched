@@ -1,7 +1,7 @@
 # 发送邮件
 
 
-mail_from="zhangchao@9zhitx.com"
+mail_from="datacenter@9zhitx.com"
 
 
 # sendmail
