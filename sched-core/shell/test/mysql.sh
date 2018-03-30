@@ -10,6 +10,9 @@ show master status
 # 查看指定binlog文件内容
 mysqlbinlog --no-defaults --start-datetime='2017-05-17 00:00:00' --stop-datetime='2017-05-17 23:59:59' -d schedule /data/mysql/mysql-bin.000012
 
+# 用mysql查看binlog
+show binlog events [in 'log_name'] [from pos] [limit [offset,]row_count]
+
 
 # 监控sql语句
 mysqlpcap -z
