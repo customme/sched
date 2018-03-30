@@ -28,8 +28,9 @@ TBL_CITY_PCT=l_city_pct
 # 留存率
 TBL_KEEP_PCT=l_prod_keep
 
-# 60日以后取留存天数
-RAND_DAYS=30
+# 90日以后取留存天数
+# 90~120 120~180 180~360 360~
+RAND_DAYS=(30 45 60 75)
 
 # 数据文件目录
 DATADIR=$HOME/data2
@@ -206,8 +207,14 @@ function rand_days()
 {
     if [[ $date_diff -le 90 ]]; then
         range_date $min_date $date60 | sed '$d'
+    elif [[ $date_diff -le 120 ]]; then
+        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[0]}
+    elif [[ $date_diff -le 180 ]]; then
+        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[1]}
+    elif [[ $date_diff -le 360 ]]; then
+        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[2]}
     else
-        range_date $min_date $date60 | sed '$d' | sort -R | head -n $RAND_DAYS
+        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[3]}
     fi
 }
 
