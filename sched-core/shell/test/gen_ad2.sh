@@ -151,11 +151,30 @@ function gen_ad1(){
 
     sed '/ 23:55/,$d' $file_visit | sort -t $'\t' -k 1,1 -u > $file_visit1
 
+    # 补充访问日志
+    local visit_count=`wc -l $file_visit1 | awk '{print $1}'`
+    local max_count=`awk '$1 == "'$the_date'" && $2 == "'$prod_id'" {print $5}' $file_ad_cnt | sort -nr | head -n 1`
+    local diff_count=`expr $max_count - $visit_count`
+    if [[ $diff_count -gt 0 ]]; then
+        log "Add visit log $diff_count"
+        cp -f $file_visit1 $file_visit2
+        local mom_count=`expr $diff_count / $visit_count`
+        local mod_count=`expr $diff_count % $visit_count`
+        for i in `seq $mom_count`; do
+            cat $file_visit1 >> $file_visit2
+        done
+        if [[ $mod_count -gt 0 ]]; then
+            sort -R $file_visit1 | head -n $mod_count >> $file_visit2
+        fi
+    else
+        mv -f $file_visit1 $file_visit2
+    fi
+
     oIFS=$IFS
     IFS=`echo -e "\t"`
     awk -F '\t' '$1 == "'$the_date'" && $2 == "'$prod_id'"' $file_ad_cnt | while read the_date prod_id adver adname show_cnt click_cnt install_cnt; do
         # 生成展示（展示时间 = 访问时间 + 60 ~ 180s）
-        sort -R $file_visit1 | head -n $show_cnt | awk -F '\t' 'BEGIN{
+        sort -R $file_visit2 | head -n $show_cnt | awk -F '\t' 'BEGIN{
             OFS=FS
             srand()
         }{
@@ -212,6 +231,7 @@ function gen_ad(){
     mkdir -p $TMPDIR
 
     file_visit1=$TMPDIR/visit1
+    file_visit2=$TMPDIR/visit2
     file_show1=$TMPDIR/show1
     file_click1=$TMPDIR/click1
 
