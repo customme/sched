@@ -443,7 +443,7 @@ function gen_active1()
         done > $file_active1
 
         local total=`cat $file_active1 | wc -l`
-        local count=`echo ${keep_pct[10]} $total | awk 'BEGIN{
+        local count=`echo ${keep_pct0:-${keep_pct[10]}} $total | awk 'BEGIN{
             srand()
         }{
             split($1,arr,"+")
@@ -451,7 +451,7 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep0=${keep_pct[10]}, total=$total, count=$count"
+        log "keep0=${keep_pct0:-${keep_pct[10]}}, total=$total, count=$count"
         sort -R $file_active1 | head -n $count >> $file_active
     fi
 }
@@ -503,6 +503,7 @@ function main()
                 prod_id=${args[0]}
                 start_date=${args[1]}
                 end_date=${args[2]}
+                keep_pct0=${args[3]}
                 active_gen=1;;
             v)
                 debug_flag=1;;

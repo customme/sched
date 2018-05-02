@@ -51,6 +51,7 @@ function get_tasks()
       prod_name,
       start_date,
       end_date,
+      keep0,
       run_status,
       IF(new_time > 0, 0, 1),
       IF(active_time > 0, 0, 1),
@@ -172,7 +173,7 @@ function run()
     if [[ $active_status -eq 1 ]]; then
         # 生成活跃
         log "Generate active"
-        sh gen_data3.sh -b $prod_id,$start_date,$end_date > $LOGDIR/${prod_id}.${start_date}.log.3 2> $LOGDIR/${prod_id}.${start_date}.err.3
+        sh gen_data3.sh -b $prod_id,$start_date,$end_date,$keep_pct0 > $LOGDIR/${prod_id}.${start_date}.log.3 2> $LOGDIR/${prod_id}.${start_date}.err.3
         if [[ $? -eq 0 ]]; then
             # 更新活跃生成时间
             update_task "active_time = NOW()"
@@ -218,7 +219,7 @@ function run()
 # 检查可执行任务
 function check()
 {
-    get_tasks | while read prod_id prod_name start_date end_date run_status new_status active_status visit_status report_status; do
+    get_tasks | while read prod_id prod_name start_date end_date keep_pct0 run_status new_status active_status visit_status report_status; do
         if [[ $run_status -eq 1 ]]; then
             any_status=$((new_status + active_status + visit_status + report_status))
             if [[ $any_status -eq 0 ]]; then
