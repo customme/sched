@@ -20,6 +20,9 @@ TP_NEW=fact_new_
 TP_ACTIVE=fact_active_
 TP_AGG=agg_
 
+# 预跑数据表
+TBL_PRERUN=fact_prerun
+
 
 # 记录日志
 function log()
@@ -291,6 +294,33 @@ function main()
     prod_id="$1"
     start_date="$2"
     end_date="$3"
+    pre_run="${4:-1}"
+
+    if [[ $pre_run -eq 0 ]]; then
+        echo "CREATE TABLE IF NOT EXISTS $TBL_PRERUN (
+          prod_id VARCHAR(32),
+          the_date INT,
+          new_cnt INT,
+          keep1_cnt INT,
+          keep2_cnt INT,
+          keep3_cnt INT,
+          keep4_cnt INT,
+          keep5_cnt INT,
+          keep6_cnt INT,
+          keep7_cnt INT,
+          keep14_cnt INT,
+          keep30_cnt INT,
+          keep60_cnt INT,
+          keep0_cnt INT,
+          PRIMARY KEY (prod_id, the_date)
+          KEY idx_prod_id (prod_id),
+          KEY idx_the_date (the_date)
+        ) ENGINE=MyISAM COMMENT='预跑数据';
+
+        LOAD DATA LOCAL INFILE '$DATADIR/$prod_id/pre_data.${start_date}-$end_date' REPLACE INTO TABLE $TBL_PRERUN" | exec_sql
+
+        return
+    fi
 
     table_new=${TP_NEW}$prod_id
     table_active=${TP_ACTIVE}$prod_id

@@ -123,15 +123,14 @@ CREATE TABLE `t_task_ext` (
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `prop_name` varchar(64) NOT NULL COMMENT '属性名',
   `prop_value` text COMMENT '属性值',
-  `version_no` int(11) NOT NULL COMMENT '版本号',
-  PRIMARY KEY (`task_id`, `prop_name`, `version_no`)
+  PRIMARY KEY (`task_id`, `prop_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务扩展属性';
-INSERT INTO `t_task_ext` (`task_id`, `prop_name`, `prop_value`, `version_no`) VALUES 
-(1, 'tar_cmd', '$SCHED_HOME/task/task_report.sh', 1),
-(1, 'is_alarm', '1', 1),
-(1, 'alarm_way', '0', 1),
-(1, 'sub_emails', 'zhangchao@9zhitx.com', 1),
-(2, 'tar_cmd', '$SCHED_HOME/task/db_backup.sh', 1);
+INSERT INTO `t_task_ext` (`task_id`, `prop_name`, `prop_value`) VALUES 
+(1, 'tar_cmd', '$SCHED_HOME/task/task_report.sh'),
+(1, 'is_alarm', '1'),
+(1, 'alarm_way', '0'),
+(1, 'sub_emails', 'zhangchao@9zhitx.com'),
+(2, 'tar_cmd', '$SCHED_HOME/task/db_backup.sh');
 
 DROP TABLE IF EXISTS `t_task_pool`;
 CREATE TABLE `t_task_pool` (

@@ -107,7 +107,7 @@ function get_keep_pct()
 {
     local file_keep_pct=$DATADIR/keep_pct
     if [[ ! -s $file_keep_pct ]]; then
-        echo "SELECT * FROM $TBL_KEEP_PCT;" | exec_sql > $file_keep_pct
+        echo "SELECT prod_name,keep1,keep2,keep3,keep4,keep5,keep6,keep7,keep14,keep30,keep60,keep0 FROM $TBL_KEEP_PCT;" | exec_sql > $file_keep_pct
     fi
 
     awk -F '\t' '$1 == "'$prod_name'" {
@@ -251,6 +251,10 @@ function gen_active1()
         > $file_active
     fi
 
+    if [[ $pre_run -eq 0 ]]; then
+        pre_data=`wc -l $file_active | awk '{print $1}'`
+    fi
+
     # 产品留存率
     local keep_pct=(`get_keep_pct`)
 
@@ -265,8 +269,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep1=${keep_pct[0]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date1 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep1=${keep_pct[0]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date1 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 2日留存
@@ -280,8 +292,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep2=${keep_pct[1]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date2 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep2=${keep_pct[1]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date2 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 3日留存
@@ -295,8 +315,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep3=${keep_pct[2]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date3 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep3=${keep_pct[2]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date3 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 4日留存
@@ -310,8 +338,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep4=${keep_pct[3]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date4 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep4=${keep_pct[3]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date4 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 5日留存
@@ -325,8 +361,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep5=${keep_pct[4]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date5 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep5=${keep_pct[4]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date5 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 6日留存
@@ -340,8 +384,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep6=${keep_pct[5]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date6 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep6=${keep_pct[5]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date6 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 7日留存
@@ -355,8 +407,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep7=${keep_pct[6]}, total=$total, count=$count"
-        sort -R $DATADIR/$prod_id/new.$date7 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep7=${keep_pct[6]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date7 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 8-14日留存
@@ -380,8 +440,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep14=${keep_pct[7]}, total=$total, count=$count"
-        sort -R $file_active1 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep14=${keep_pct[7]}, total=$total, count=$count"
+            sort -R $file_active1 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 15-30日留存
@@ -405,8 +473,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep30=${keep_pct[8]}, total=$total, count=$count"
-        sort -R $file_active1 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep30=${keep_pct[8]}, total=$total, count=$count"
+            sort -R $file_active1 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 31-60日留存
@@ -430,8 +506,16 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep60=${keep_pct[9]}, total=$total, count=$count"
-        sort -R $file_active1 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep60=${keep_pct[9]}, total=$total, count=$count"
+            sort -R $file_active1 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
     fi
 
     # 60~日留存
@@ -451,8 +535,18 @@ function gen_active1()
             cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
             print cnt
         }'`
-        log "keep0=${keep_pct0:-${keep_pct[10]}}, total=$total, count=$count"
-        sort -R $file_active1 | head -n $count >> $file_active
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep0=${keep_pct0:-${keep_pct[10]}}, total=$total, count=$count"
+            sort -R $file_active1 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+            echo -e "$prod_name\t${the_date//-/}\t$pre_data" >> $file_prerun
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+            echo -e "$prod_name\t${the_date//-/}\t$pre_data" >> $file_prerun
+        fi
     fi
 }
 
@@ -460,6 +554,12 @@ function gen_active1()
 function gen_active()
 {
     local file_active1=$TMPDIR/$prod_id/active1
+
+    # 预跑模式
+    if [[ $pre_run -eq 0 ]]; then
+        file_prerun=$DATADIR/$prod_id/pre_data.${start_date}-$end_date
+        > $file_prerun
+    fi
 
     range_date $start_date $end_date | while read the_date; do
         # 生成一天活跃
@@ -504,6 +604,7 @@ function main()
                 start_date=${args[1]}
                 end_date=${args[2]}
                 keep_pct0=${args[3]}
+                pre_run=${args[4]:-1}
                 active_gen=1;;
             v)
                 debug_flag=1;;

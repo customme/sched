@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # 自动检测任务并生成数据
+# 用法: nohup sh task_controller.sh > task_controller.log 2>&1 &
 
 
 # 自身pid
@@ -53,6 +54,7 @@ function get_tasks()
       end_date,
       keep0,
       run_status,
+      IFNULL(pre_run, 0),
       IF(new_time > 0, 0, 1),
       IF(active_time > 0, 0, 1),
       IF(visit_time > 0, 0, 1),
@@ -137,7 +139,7 @@ function run()
 
         # 判断是否够用
         diff=$((max_id + new_cnt - aid_cnt))
-        if [[ $diff -gt 0 ]]; then
+        if [[ $pre_run -eq 1 && $diff -gt 0 ]]; then
             # 生成android id
             log "Generate android id"
             sh gen_data3-1.sh -a $diff > $LOGDIR/${prod_id}.${start_date}.log.1 2> $LOGDIR/${prod_id}.${start_date}.err.1
@@ -173,7 +175,7 @@ function run()
     if [[ $active_status -eq 1 ]]; then
         # 生成活跃
         log "Generate active"
-        sh gen_data3.sh -b $prod_id,$start_date,$end_date,$keep_pct0 > $LOGDIR/${prod_id}.${start_date}.log.3 2> $LOGDIR/${prod_id}.${start_date}.err.3
+        sh gen_data3.sh -b $prod_id,$start_date,$end_date,$keep_pct0,$pre_run > $LOGDIR/${prod_id}.${start_date}.log.3 2> $LOGDIR/${prod_id}.${start_date}.err.3
         if [[ $? -eq 0 ]]; then
             # 更新活跃生成时间
             update_task "active_time = NOW()"
@@ -187,7 +189,7 @@ function run()
     fi
 
     # 访问
-    if [[ $visit_status -eq 1 ]]; then
+    if [[ $pre_run -eq 1 && $visit_status -eq 1 ]]; then
         if [[ ! `ps aux | grep "gen_data3-1\.sh -b $prod_id,$start_date,$end_date"` ]]; then
             gen_visit &
         else
@@ -200,12 +202,12 @@ function run()
         if [[ ! `ps aux | grep "sh load_active3\.sh $prod_id $start_date $end_date"` ]]; then
             # 统计报表
             log "Generate report"
-            sh load_active3.sh $prod_id $start_date $end_date > $LOGDIR/${prod_id}.${start_date}.log.5 2> $LOGDIR/${prod_id}.${start_date}.err.5
+            sh load_active3.sh $prod_id $start_date $end_date $pre_run > $LOGDIR/${prod_id}.${start_date}.log.5 2> $LOGDIR/${prod_id}.${start_date}.err.5
             if [[ $? -eq 0 ]]; then
                 # 更新报表生成时间
                 update_task "report_time = NOW()"
                 # 更新任务状态
-                update_task "run_status = 3" "AND visit_time > 0 AND report_time > 0"
+                update_task "run_status = 3" "AND (visit_time > 0 OR pre_run = 0) AND report_time > 0"
             else
                 error_msg=`sed "s/\('\|\"\)/\\\\\1/g" $LOGDIR/${prod_id}.${start_date}.err.5 | awk '{printf("%s\\\n",$0)}'`
                 update_task "run_status = 4, error_msg = CONCAT(IFNULL(error_msg,''), '\nGenerate report failed\n', '$error_msg')"
@@ -219,7 +221,7 @@ function run()
 # 检查可执行任务
 function check()
 {
-    get_tasks | while read prod_id prod_name start_date end_date keep_pct0 run_status new_status active_status visit_status report_status; do
+    get_tasks | while read prod_id prod_name start_date end_date keep_pct0 run_status pre_run new_status active_status visit_status report_status; do
         if [[ $run_status -eq 1 ]]; then
             any_status=$((new_status + active_status + visit_status + report_status))
             if [[ $any_status -eq 0 ]]; then
@@ -244,7 +246,7 @@ function graceful_exit()
     if [[ $bye ]]; then
         log "Wait subprocess to complete"
         pst=`pstree $PID`
-        while [[ "$pst" != "sh---pstree" ]]; do
+        while [[ "$pst" != "" && "$pst" != "sh---pstree" ]]; do
             sleep 1
             pst=`pstree $PID`
         done
