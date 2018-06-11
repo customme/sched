@@ -17,14 +17,12 @@ MYSQL_CHARSET=utf8
 # 检测时间间隔(60秒)
 CHECK_INTERVAL=60
 
-# 数据文件目录
-DATADIR=$HOME/data5
 # 日志文件目录
 LOGDIR=./logs
 
 
 # 创建目录
-mkdir -p $DATADIR $LOGDIR
+mkdir -p $LOGDIR
 
 # 记录日志
 function log()
@@ -64,13 +62,13 @@ function update_task()
 # 运行
 function run()
 {
-    sh gen_ad3.sh $start_date $end_date > $LOGDIR/ad-${start_date}-${end_date}.log 2> ad-${start_date}-${end_date}.err
+    sh gen_ad3.sh $start_date $end_date > $LOGDIR/ad-${start_date}-${end_date}.log 2> $LOGDIR/ad-${start_date}-${end_date}.err
     if [[ $? -eq 0 ]]; then
         # 更新任务状态
-        update_task "run_status = 3"
+        update_task "run_status = 3, end_time = NOW()"
     else
         error_msg=`sed "s/\('\|\"\)/\\\\\1/g" ad-${start_date}-${end_date}.err | awk '{printf("%s\\\n",$0)}'`
-        update_task "run_status = 4, error_msg = CONCAT(IFNULL(error_msg,''), '\nGenerate ad failed\n', '$error_msg')"
+        update_task "run_status = 4, end_time = NOW(), error_msg = CONCAT(IFNULL(error_msg,''), '\nGenerate ad failed\n', '$error_msg')"
     fi
 }
 
@@ -79,7 +77,7 @@ function check()
 {
     get_tasks | while read start_date end_date; do
         log "Run task($prod_id, $start_date, $end_date)"
-        update_task "run_status = 2"
+        update_task "run_status = 2, start_time = NOW()"
         run &
     done
 }
