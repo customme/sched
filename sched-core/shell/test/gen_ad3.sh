@@ -229,9 +229,9 @@ function gen_ad1(){
             show_time = strftime("%Y-%m-%d %H:%M:%S",time2)
 
             # 替换地区 ip
-            the_city=$3
-            the_ip=$4
-            if($3 != city){
+            the_city = $3
+            the_ip = $4
+            if(city != "NULL" && $3 != city){
                 # 取随机ip段
                 i_ips = int(rand() * size + 1)
                 ips = ips_arr[i_ips]
@@ -247,7 +247,7 @@ function gen_ad1(){
             }
 
             print $1,$2,the_city,the_ip,show_time,"'$adver'","'$adname'"
-        }' > $file_show1
+        }' city="$city" > $file_show1
 
         # 生成点击（点击时间 = 展示时间 + 1 ~ 60s）
         sort -R $file_show1 | head -n $click_cnt | awk -F '\t' 'BEGIN{
@@ -355,6 +355,12 @@ function stat_ad()
         done
     done > $file_ad_stat
 
+    # 报表数据库在本地
+    MYSQL_HOST=localhost
+    MYSQL_PORT=3306
+    MYSQL_USER=root
+    MYSQL_PASSWD=mysql
+
     echo "USE $DW_NAME;
     CREATE TABLE IF NOT EXISTS $table_ad_stat (
       stat_date INT,
@@ -412,7 +418,7 @@ function main()
 
     if [[ $PROD_TYPE -eq 1 ]]; then
         prods=$PRODS_N
-        table_income=l_all_income_n
+        table_income=l_all_income
         file_income=$DATADIR/income_n
         file_ad_cnt=$DATADIR/ad_cnt_n
         file_ad_stat=$DATADIR/ad_stat_n.${start_date//-/}-${end_date//-/}
