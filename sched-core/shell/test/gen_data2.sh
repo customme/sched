@@ -170,12 +170,21 @@ function gen_new1()
         }
     }' id=$max_id > $file_new1
 
-    local total_new=`cat $file_new1 | wc -l`
+    if [[ "$prod_id" =~ _n$ ]]; then
+        local total_new=`cat $file_new1 | wc -l`
+    else
+        local total_new=`grep -Ev "Bxd0074|Bxd0075|Bxd0076" $file_new1 | wc -l`
+    fi
 
     # 按地区占比分配地区
     range_city | tee $file_city_rng | while read city range; do
         sed -n "$range p" $file_new1 | awk -F '\t' 'BEGIN{OFS=FS}{print $0,"'$city'"}'
     done > $file_new
+
+    # 国外产品国内渠道
+    if [[ ! "$prod_id" =~ _n$ ]]; then
+        grep -E "Bxd0074|Bxd0075|Bxd0076" $file_new1 | awk -F '\t' 'BEGIN{OFS=FS}{print $0,"中国"}' >> $file_new
+    fi
 
     # 更新最大id
     if [[ -s $file_new ]]; then
