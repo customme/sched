@@ -72,6 +72,18 @@ function load_new()
     ) ENGINE=MyISAM COMMENT='新增用户';
     " | exec_sql
 
+    # 添加索引
+    echo "CREATE INDEX IF NOT EXISTS idx_cuscode ON $table_new (cuscode);
+    CREATE INDEX IF NOT EXISTS idx_city ON $table_new (city);
+    CREATE INDEX IF NOT EXISTS idx_create_date ON $table_new (create_date);
+    " | exec_sql
+
+    # 如果数据已经生成，先删除
+    echo "DELETE FROM $table_new WHERE create_date >= $start_date AND create_date <=$end_date;" | exec_sql
+
+    # 禁用索引
+    echo "ALTER TABLE $table_new DISABLE KEYS;" | exec_sql
+
     # 按天导入
     range_date $start_date $end_date | while read the_date; do
         the_file=$DATADIR/$prod_id/new.$the_date
@@ -81,11 +93,8 @@ function load_new()
         fi
     done
 
-    # 添加索引
-    echo "CREATE INDEX IF NOT EXISTS idx_cuscode ON $table_new (cuscode);
-    CREATE INDEX IF NOT EXISTS idx_city ON $table_new (city);
-    CREATE INDEX IF NOT EXISTS idx_create_date ON $table_new (create_date);
-    " | exec_sql
+    # 启用索引
+    echo "ALTER TABLE $table_new ENABLE KEYS;" | exec_sql
 }
 
 # 装载活跃
@@ -118,6 +127,20 @@ function load_active()
     ) ENGINE=MyISAM COMMENT='活跃用户';
     " | exec_sql
 
+    # 添加索引
+    echo "CREATE INDEX IF NOT EXISTS idx_cuscode ON $table_active (cuscode);
+    CREATE INDEX IF NOT EXISTS idx_city ON $table_active (city);
+    CREATE INDEX IF NOT EXISTS idx_active_date ON $table_active (active_date);
+    CREATE INDEX IF NOT EXISTS idx_create_date ON $table_active (create_date);
+    CREATE INDEX IF NOT EXISTS idx_date_diff ON $table_active (date_diff);
+    " | exec_sql
+
+    # 如果数据已经生成，先删除
+    echo "DELETE FROM $table_active WHERE active_date >= $start_date AND active_date <=$end_date;" | exec_sql
+
+    # 禁用索引
+    echo "ALTER TABLE $table_active DISABLE KEYS;" | exec_sql
+
     # 按天装载活跃
     range_date $start_date $end_date | while read the_date; do
         the_file=$DATADIR/$prod_id/active.$the_date
@@ -140,17 +163,12 @@ function load_active()
         join -t "$sep" $the_file $file_new > $file_active
 
         echo "LOAD DATA LOCAL INFILE '$file_active' INTO TABLE $table_active (aidid, cuscode, city, create_date, active_date, date_diff)
-        SET active_date = ${the_date//-/}, date_diff = DATEDIFF(${the_date//-/}, create_date);
+          SET active_date = ${the_date//-/}, date_diff = DATEDIFF(${the_date//-/}, create_date);
         " | exec_sql
     done
 
-    # 添加索引
-    echo "CREATE INDEX IF NOT EXISTS idx_cuscode ON $table_active (cuscode);
-    CREATE INDEX IF NOT EXISTS idx_city ON $table_active (city);
-    CREATE INDEX IF NOT EXISTS idx_active_date ON $table_active (active_date);
-    CREATE INDEX IF NOT EXISTS idx_create_date ON $table_active (create_date);
-    CREATE INDEX IF NOT EXISTS idx_date_diff ON $table_active (date_diff);
-    " | exec_sql
+    # 启用索引
+    echo "ALTER TABLE $table_active ENABLE KEYS;" | exec_sql
 
     # 删除临时文件
     rm -f $file_new $file_active
