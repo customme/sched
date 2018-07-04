@@ -29,7 +29,7 @@ mkdir -p $DATADIR $LOGDIR
 # 记录日志
 function log()
 {
-    echo "$(date +'%F %T.%N') [ $@ ]"
+    echo "$(date +'%F %T.%N') $PID [ $@ ]"
 }
 
 # 捕捉kill信号
