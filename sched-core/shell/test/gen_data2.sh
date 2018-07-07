@@ -169,27 +169,41 @@ function gen_new1()
             print ++id,$1
         }
     }' id=$max_id > $file_new1
+    # 新最大ID
+    local new_maxid=`tail -n 1 $file_new1 | cut -f 1`
 
     if [[ "$prod_id" =~ _n$ ]]; then
         local total_new=`cat $file_new1 | wc -l`
+        cp -f $file_new1 $file_new2
     else
-        local total_new=`grep -Ev "Bxd0074|Bxd0075|Bxd0076" $file_new1 | wc -l`
+        log "Exclude cuscode: { Bxd0074,Bxd0075,Bxd0076 }"
+        > $file_new2
+        > $file_new3
+        awk '{
+            if($2 ~ /Bxd0074|Bxd0075|Bxd0076/){
+                print $0 >> "'$file_new3'"
+            }else{
+                print $0 >> "'$file_new2'"
+            }
+        }' $file_new1
+        if [[ -s $file_new2 ]]; then
+            local total_new=`cat $file_new2 | wc -l`
+        fi
     fi
 
     # 按地区占比分配地区
     range_city | tee $file_city_rng | while read city range; do
-        sed -n "$range p" $file_new1 | awk -F '\t' 'BEGIN{OFS=FS}{print $0,"'$city'"}'
+        sed -n "$range p" $file_new2 | awk -F '\t' 'BEGIN{OFS=FS}{print $0,"'$city'"}'
     done > $file_new
 
     # 国外产品国内渠道
     if [[ ! "$prod_id" =~ _n$ ]]; then
-        grep -E "Bxd0074|Bxd0075|Bxd0076" $file_new1 | awk -F '\t' 'BEGIN{OFS=FS}{print $0,"中国"}' >> $file_new
+        log "Allot area to 中国 for cuscode: { Bxd0074,Bxd0075,Bxd0076 }"
+        awk -F '\t' 'BEGIN{OFS=FS}{print $0,"中国"}' $file_new3 >> $file_new
     fi
 
     # 更新最大id
-    if [[ -s $file_new ]]; then
-        tail -n 1 $file_new | cut -f 1 > $file_maxid
-    fi
+    echo $new_maxid > $file_maxid
 }
 
 # 生成新增
@@ -197,6 +211,8 @@ function gen_new()
 {
     local file_maxid=$DATADIR/max_id
     local file_new1=$TMPDIR/$prod_id/new1
+    local file_new2=$TMPDIR/$prod_id/new2
+    local file_new3=$TMPDIR/$prod_id/new3
     local file_city_rng=$TMPDIR/$prod_id/city_range
 
     range_date $start_date $end_date | while read the_date; do
@@ -208,7 +224,7 @@ function gen_new()
     done
 
     # 删除临时文件
-    rm -f $file_new1 $file_city_rng
+    rm -f $file_new1 $file_new2 $file_new3 $file_city_rng
 }
 
 # 随机日期
