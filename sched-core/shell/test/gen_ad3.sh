@@ -20,20 +20,15 @@ MYSQL_CHARSET=utf8
 DW_NAME=ad_dw2
 
 # 广告类型（1国内 2国外）
-PROD_TYPE=2
-
-# 国内产品
-PRODS_N="adv_n,compass_n,file_n,light_n,recorder_n,search_n,weather_n,qtext_n,sport_n"
-# 国外产品
-PRODS="adv,recorder,file,search,shop,qtext,sport"
+PROD_TYPE=1
 
 # 数据文件目录
-DATADIR=$HOME/data2
+DATADIR=/home/ad/logs
 # 临时文件目录
-TMPDIR=$HOME/tmp2/$(date +%s%N)
+TMPDIR=/home/ad/tmp/$(date +%s%N)
 
 # ip文件
-FILE_IP=$DATADIR/ip
+FILE_IP=$DATADIR/nip
 
 
 # 记录日志
@@ -78,6 +73,11 @@ function export_data()
         log "Export data to file: $file_income"
         echo "SELECT stattime, adver, advname, adduser, shows, clicks, IF(city > '', city, NULL) FROM $table_income;" | exec_sql > $file_income
     fi
+
+    if [[ ! -s $file_ad_pct ]]; then
+        log "Export ad pct to file: $file_ad_pct"
+        echo "SELECT month, pct FROM $table_ad_pct;" | exec_sql > $file_ad_pct
+    fi
 }
 
 # 统计活跃占比
@@ -107,8 +107,11 @@ function stat_active()
 function allot_ad()
 {
     range_date $start_date $end_date | while read the_date; do
-        # 活跃占比
-        active_pct=`stat_active`
+        # 广告产品占比
+        the_month=${the_date:0:7}
+        the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
+        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+        ad_pct=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 0 {printf("%s,",$1 / 100)}' | sed 's/,$//'`
 
         # 分配激活
         awk -F '\t' 'BEGIN{
@@ -116,8 +119,8 @@ function allot_ad()
             srand()
 
             split("'$prods'",arr_prod,",")
-            split("'$active_pct'",arr_pct,",")
-        } $1 == "'$the_date'" {
+            split("'$ad_pct'",arr_pct,",")
+        } $1 == "'$the_date'" && $3 !~ /^E-commerce1$|^E-commerce$/ {
             sum = 0
             sum1 = 0
             sum2 = 0
@@ -157,6 +160,13 @@ function allot_ad()
                     print $1,arr_prod[i],$2,$3,arr_cnt1[i],arr_cnt2[i],arr_cnt[i],$7
                 }
             }
+        }' $file_income
+
+        # 海外广告特殊处理（E-commerce1 E-commerce）
+        awk -F '\t' 'BEGIN{
+            OFS=FS
+        } $1 == "'$the_date'" && $3 ~ /^E-commerce1$|^E-commerce$/ {
+            print $1,shop,$2,$3,$4,$5,$6,$7
         }' $file_income
     done > $file_ad_cnt
 }
@@ -301,6 +311,10 @@ function gen_ad(){
     range_date $start_date $end_date | while read the_date; do
         log "Gen ad for date: $the_date"
 
+        the_month=${the_date:0:7}
+        the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
+        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+
         arr_prod=(${prods//,/ })
         for prod_id in ${arr_prod[@]}; do
             if [[ `grep "^$the_date" $file_ad_cnt | grep "$prod_id"` ]]; then
@@ -329,6 +343,10 @@ function gen_ad(){
 function stat_ad()
 {
     range_date $start_date $end_date | while read the_date; do
+        the_month=${the_date:0:7}
+        the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
+        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+
         arr_prod=(${prods//,/ })
         for prod_id in ${arr_prod[@]}; do
             file_show=$DATADIR/$prod_id/show.$the_date
@@ -354,12 +372,6 @@ function stat_ad()
             fi
         done
     done > $file_ad_stat
-
-    # 报表数据库在本地
-    MYSQL_HOST=localhost
-    MYSQL_PORT=3306
-    MYSQL_USER=root
-    MYSQL_PASSWD=mysql
 
     echo "USE $DW_NAME;
     CREATE TABLE IF NOT EXISTS $table_ad_stat (
@@ -417,16 +429,18 @@ function main()
     export LC_ALL=C
 
     if [[ $PROD_TYPE -eq 1 ]]; then
-        prods=$PRODS_N
         table_income=l_all_income
         file_income=$DATADIR/income_n
+        table_ad_pct=l_all_income_pct
+        file_ad_pct=$DATADIR/ad_pct_n
         file_ad_cnt=$DATADIR/ad_cnt_n
         file_ad_stat=$DATADIR/ad_stat_n.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad_n
     else
-        prods=$PRODS
         table_income=l_all_income
         file_income=$DATADIR/income
+        table_ad_pct=l_all_income_pct
+        file_ad_pct=$DATADIR/ad_pct
         file_ad_cnt=$DATADIR/ad_cnt
         file_ad_stat=$DATADIR/ad_stat.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad
