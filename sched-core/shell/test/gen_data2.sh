@@ -30,7 +30,7 @@ TBL_KEEP_PCT=l_prod_keep
 
 # 90日以后取留存天数
 # 90~120 120~180 180~360 360~
-RAND_DAYS=(30 45 60 75)
+RAND_DAYS=(30 45 60 120)
 
 # 数据文件目录
 DATADIR=$HOME/data2
@@ -107,7 +107,7 @@ function get_keep_pct()
 {
     local file_keep_pct=$DATADIR/keep_pct
     if [[ ! -s $file_keep_pct ]]; then
-        echo "SELECT prod_name,keep1,keep2,keep3,keep4,keep5,keep6,keep7,keep14,keep30,keep60,keep0 FROM $TBL_KEEP_PCT;" | exec_sql > $file_keep_pct
+        echo "SELECT prod_name,keep1,keep2,keep3,keep4,keep5,keep6,keep7,keep14,keep30,keep60,keep0,keep90,keep180,keep360 FROM $TBL_KEEP_PCT;" | exec_sql > $file_keep_pct
     fi
 
     awk -F '\t' '$1 == "'$prod_name'" {
@@ -233,13 +233,20 @@ function rand_days()
     if [[ $date_diff -le 90 ]]; then
         range_date $min_date $date60 | sed '$d'
     elif [[ $date_diff -le 120 ]]; then
-        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[0]}
+        range_date $min_date $date60 | sed '$d' | grep -v "$date90" | sort -R | head -n ${RAND_DAYS[0]}
+        echo $date90
     elif [[ $date_diff -le 180 ]]; then
-        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[1]}
+        range_date $min_date $date60 | sed '$d' | grep -v "$date90" | sort -R | head -n ${RAND_DAYS[1]}
+        echo $date90
     elif [[ $date_diff -le 360 ]]; then
-        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[2]}
+        range_date $min_date $date60 | sed '$d' | grep -Ev "$date90|$date180" | sort -R | head -n ${RAND_DAYS[2]}
+        echo $date90
+        echo $date180
     else
-        range_date $min_date $date60 | sed '$d' | sort -R | head -n ${RAND_DAYS[3]}
+        range_date $min_date $date60 | sed '$d' | grep -Ev "$date90|$date180|$date360" | sort -R | head -n ${RAND_DAYS[3]}
+        echo $date90
+        echo $date180
+        echo $date360
     fi
 }
 
@@ -256,7 +263,10 @@ function gen_active1()
     local date14=`date +%F -d "$the_date 14 day ago"`
     local date30=`date +%F -d "$the_date 30 day ago"`
     local date60=`date +%F -d "$the_date 60 day ago"`
-    log "date1=$date1, date7=$date7, date14=$date14, date30=$date30, date60=$date60"
+    local date90=`date +%F -d "$the_date 90 day ago"`
+    local date180=`date +%F -d "$the_date 180 day ago"`
+    local date360=`date +%F -d "$the_date 360 day ago"`
+    log "date1=$date1, date7=$date7, date14=$date14, date30=$date30, date60=$date60, date90=$date90, date180=$date180, date360=$date360"
 
     local date_diff=`echo "$min_date $the_date" | awk '{
         gsub("-"," ",$1)
@@ -545,7 +555,7 @@ function gen_active1()
 
     # 60~日留存
     if [[ $date_diff -ge 61 ]]; then
-        rand_days | while read the_date1; do
+        rand_days | grep -Ev "$date90|$date180|$date360" | while read the_date1; do
             if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
                 cat $DATADIR/$prod_id/new.$the_date1
             fi
@@ -571,6 +581,75 @@ function gen_active1()
         if [[ $pre_run -eq 0 ]]; then
             pre_data="$pre_data\t0"
             echo -e "$prod_name\t${the_date//-/}\t$pre_data" >> $file_prerun
+        fi
+    fi
+
+    # 90日留存
+    if [[ $date_diff -ge 90 && -s $DATADIR/$prod_id/new.$date90 ]]; then
+        local total=`cat $DATADIR/$prod_id/new.$date90 | wc -l`
+        local count=`echo ${keep_pct[11]} $total | awk 'BEGIN{
+            srand()
+        }{
+            split($1,arr,"+")
+            rnd = int(rand() * (arr[2] + 1))
+            cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
+            print cnt
+        }'`
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep90=${keep_pct[11]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date90 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
+    fi
+
+    # 180日留存
+    if [[ $date_diff -ge 180 && -s $DATADIR/$prod_id/new.$date180 ]]; then
+        local total=`cat $DATADIR/$prod_id/new.$date180 | wc -l`
+        local count=`echo ${keep_pct[12]} $total | awk 'BEGIN{
+            srand()
+        }{
+            split($1,arr,"+")
+            rnd = int(rand() * (arr[2] + 1))
+            cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
+            print cnt
+        }'`
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep180=${keep_pct[12]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date180 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
+        fi
+    fi
+
+    # 360日留存
+    if [[ $date_diff -ge 360 && -s $DATADIR/$prod_id/new.$date360 ]]; then
+        local total=`cat $DATADIR/$prod_id/new.$date360 | wc -l`
+        local count=`echo ${keep_pct[13]} $total | awk 'BEGIN{
+            srand()
+        }{
+            split($1,arr,"+")
+            rnd = int(rand() * (arr[2] + 1))
+            cnt = int($2 * (arr[1] + rnd) / 1000 + 0.5)
+            print cnt
+        }'`
+        if [[ $pre_run -eq 1 ]]; then
+            log "keep360=${keep_pct[13]}, total=$total, count=$count"
+            sort -R $DATADIR/$prod_id/new.$date360 | head -n $count >> $file_active
+        else
+            pre_data="$pre_data\t$count"
+        fi
+    else
+        if [[ $pre_run -eq 0 ]]; then
+            pre_data="$pre_data\t0"
         fi
     fi
 }
