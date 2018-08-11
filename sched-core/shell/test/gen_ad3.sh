@@ -395,6 +395,70 @@ function stat_ad()
     CREATE INDEX IF NOT EXISTS idx_adver ON $table_ad_stat (adver);
     CREATE INDEX IF NOT EXISTS idx_adname ON $table_ad_stat (adname);
     " | exec_sql
+
+    # 活跃广告
+    # 活跃
+    local file_active1=$TMPDIR/active1
+    range_date $start_date $end_date | while read the_date; do
+        find $DATADIR -type d -nowarn -mindepth 1 | while read the_path; do
+            prod_id=`basename $the_path`
+            file_active=$DATADIR/$prod_id/active.$the_date
+            if [[ -s $file_active ]]; then
+                awk -F '\t' 'BEGIN{
+                    OFS=FS
+                }{
+                    count[$2"$"$3]++
+                }END{
+                    for(key in count){
+                        print "'${the_date//-/}'$'$prod_id'$"key,count[key]
+                    }
+                }' $file_active
+            fi
+        done
+    done > $file_active1
+
+    # 广告
+    local file_ad1=$TMPDIR/ad1
+    awk -F '\t' 'BEGIN{
+        OFS=FS
+    }{
+        show_cnt[$1"$"$2"$"$3"$"$4] += $7
+        click_cnt[$1"$"$2"$"$3"$"$4] += $8
+        install_cnt[$1"$"$2"$"$3"$"$4] += $9
+    }END{
+        for(key in show_cnt){
+            print key,show_cnt[key],click_cnt[key],install_cnt[key]
+        }
+    }' $file_ad_stat > $file_ad1
+
+    # 排序
+    export LC_ALL=C
+    sep=`echo -e "\t"`
+    sort $file_active1 -o $file_active1
+    sort $file_ad1 -o $file_ad1
+    # 关联
+    join -t "$sep" $file_active1 $file_ad1 | sed 's/\$/\t/g' > $file_ad_active
+
+    # 入库
+    echo "USE $DW_NAME;
+    CREATE TABLE IF NOT EXISTS $table_ad_active (
+      stat_date INT,
+      prod_id VARCHAR(20),
+      cuscode VARCHAR(64),
+      city VARCHAR(64),
+      active_cnt INT,
+      show_cnt INT,
+      click_cnt INT,
+      install_cnt INT
+    ) ENGINE=MyISAM COMMENT='广告活跃展现点击激活';
+
+    LOAD DATA LOCAL INFILE '$file_ad_active' INTO TABLE $table_ad_active;
+
+    CREATE INDEX IF NOT EXISTS idx_stat_date ON $table_ad_active (stat_date);
+    CREATE INDEX IF NOT EXISTS idx_prod_id ON $table_ad_active (prod_id);
+    CREATE INDEX IF NOT EXISTS idx_cuscode ON $table_ad_active (cuscode);
+    CREATE INDEX IF NOT EXISTS idx_city ON $table_ad_active (city);
+    " | exec_sql
 }
 
 # 校验数据
@@ -436,6 +500,8 @@ function main()
         file_ad_cnt=$DATADIR/ad_cnt_n
         file_ad_stat=$DATADIR/ad_stat_n.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad_n
+        file_ad_active=$DATADIR/ad_active_n.${start_date//-/}-${end_date//-/}
+        table_ad_active=fact_ad_active_n
     else
         table_income=l_all_income
         file_income=$DATADIR/income
@@ -444,6 +510,8 @@ function main()
         file_ad_cnt=$DATADIR/ad_cnt
         file_ad_stat=$DATADIR/ad_stat.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad
+        file_ad_active=$DATADIR/ad_active.${start_date//-/}-${end_date//-/}
+        table_ad_active=fact_ad_active
     fi
 
     # 导出激活量
