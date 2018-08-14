@@ -475,7 +475,15 @@ function gen_active1()
         fi
         range_date $date8 $date7 | sed '$d' | while read the_date1; do
             if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
-                awk -F '\t' 'BEGIN{OFS=FS}{print $1 % 2,$0}' $DATADIR/$prod_id/new.$the_date1
+                total=`cat $DATADIR/$prod_id/new.$the_date1 | wc -l`
+                count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
+                awk -F '\t' 'BEGIN{
+                    OFS=FS
+                }{
+                    ok=0
+                    if(NR < count) ok=1
+                    print ok,$0
+                }' count=$count $DATADIR/$prod_id/new.$the_date1
             fi
         done > $file_active1
 
@@ -491,7 +499,7 @@ function gen_active1()
         if [[ $pre_run -eq 1 ]]; then
             local rand_count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
             log "keep14=${keep_pct[7]}, total=$total, count=$count, rand_count=$rand_count"
-            sort -nk1 $file_active1 | head -n $rand_count | sed 's/^[01]\t//' | sort -R | head -n $count >> $file_active
+            awk -F '\t' 'BEGIN{OFS=FS} $1 == 1 {print $2,$3,$4}' $file_active1 | head -n $rand_count | sort -R | head -n $count >> $file_active
         else
             pre_data="$pre_data\t$count"
         fi
@@ -509,7 +517,15 @@ function gen_active1()
         fi
         range_date $date15 $date14 | sed '$d' | while read the_date1; do
             if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
-                awk -F '\t' 'BEGIN{OFS=FS}{print $1 % 2,$0}' $DATADIR/$prod_id/new.$the_date1
+                total=`cat $DATADIR/$prod_id/new.$the_date1 | wc -l`
+                count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
+                awk -F '\t' 'BEGIN{
+                    OFS=FS
+                }{
+                    ok=0
+                    if(NR < count) ok=1
+                    print ok,$0
+                }' count=$count $DATADIR/$prod_id/new.$the_date1
             fi
         done > $file_active1
 
@@ -525,7 +541,7 @@ function gen_active1()
         if [[ $pre_run -eq 1 ]]; then
             local rand_count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
             log "keep30=${keep_pct[8]}, total=$total, count=$count, rand_count=$rand_count"
-            sort -nk1 $file_active1 | head -n $rand_count | sed 's/^[01]\t//' | sort -R | head -n $count >> $file_active
+            awk -F '\t' 'BEGIN{OFS=FS} $1 == 1 {print $2,$3,$4}' $file_active1 | head -n $rand_count | sort -R | head -n $count >> $file_active
         else
             pre_data="$pre_data\t$count"
         fi
@@ -543,7 +559,15 @@ function gen_active1()
         fi
         range_date $date31 $date30 | sed '$d' | while read the_date1; do
             if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
-                awk -F '\t' 'BEGIN{OFS=FS}{print $1 % 2,$0}' $DATADIR/$prod_id/new.$the_date1
+                total=`cat $DATADIR/$prod_id/new.$the_date1 | wc -l`
+                count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
+                awk -F '\t' 'BEGIN{
+                    OFS=FS
+                }{
+                    ok=0
+                    if(NR < count) ok=1
+                    print ok,$0
+                }' count=$count $DATADIR/$prod_id/new.$the_date1
             fi
         done > $file_active1
 
@@ -559,7 +583,7 @@ function gen_active1()
         if [[ $pre_run -eq 1 ]]; then
             local rand_count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
             log "keep60=${keep_pct[9]}, total=$total, count=$count, rand_count=$rand_count"
-            sort -nk1 $file_active1 | head -n $rand_count | sed 's/^[01]\t//' | sort -R | head -n $count >> $file_active
+            awk -F '\t' 'BEGIN{OFS=FS} $1 == 1 {print $2,$3,$4}' $file_active1 | head -n $rand_count | sort -R | head -n $count >> $file_active
         else
             pre_data="$pre_data\t$count"
         fi
@@ -573,7 +597,15 @@ function gen_active1()
     if [[ $date_diff -ge 61 ]]; then
         rand_days | grep -Ev "$date90|$date180|$date360" | while read the_date1; do
             if [[ -s $DATADIR/$prod_id/new.$the_date1 ]]; then
-                awk -F '\t' 'BEGIN{OFS=FS}{print $1 % 2,$0}' $DATADIR/$prod_id/new.$the_date1
+                total=`cat $DATADIR/$prod_id/new.$the_date1 | wc -l`
+                count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
+                awk -F '\t' 'BEGIN{
+                    OFS=FS
+                }{
+                    ok=0
+                    if(NR < count) ok=1
+                    print ok,$0
+                }' count=$count $DATADIR/$prod_id/new.$the_date1
             fi
         done > $file_active1
 
@@ -589,7 +621,7 @@ function gen_active1()
         if [[ $pre_run -eq 1 ]]; then
             local rand_count=`echo $total $rand0 | awk '{print int($1 * $2 / 100)}'`
             log "keep0=${keep_pct0:-${keep_pct[10]}}, total=$total, count=$count, rand_count=$rand_count"
-            sort -nk1 $file_active1 | head -n $rand_count | sed 's/^[01]\t//' | sort -R | head -n $count >> $file_active
+            awk -F '\t' 'BEGIN{OFS=FS} $1 == 1 {print $2,$3,$4}' $file_active1 | head -n $rand_count | sort -R | head -n $count >> $file_active
         else
             pre_data="$pre_data\t$count"
             echo -e "$prod_name\t${the_date//-/}\t$pre_data" >> $file_prerun
