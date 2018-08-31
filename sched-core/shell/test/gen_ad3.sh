@@ -22,6 +22,9 @@ DW_NAME=ad_dw2
 # 广告类型（1国内 2国外）
 PROD_TYPE=1
 
+# 国内产品
+PRODS="adv_n,compass_n,file_n,light_n,recorder_n,search_n,weather_n,qtext_n,sport_n,space_n,broswer_n"
+
 # 数据文件目录
 DATADIR=/home/ad/logs
 # 临时文件目录
@@ -95,23 +98,40 @@ function stat_active()
         active_cnt[++i]=$1
         sum += $1
     }END{
-        size = length(active_cnt)
-        for(i=1;i<size;i++){
-            printf("%s,",active_cnt[i] / sum)
+        if(sum > 0){
+            size = length(active_cnt)
+            for(i=1;i<size;i++){
+                printf("%s,",active_cnt[i] / sum)
+            }
+            printf("%s",active_cnt[size] / sum)
         }
-        printf("%s",active_cnt[size] / sum)
     }'
 }
 
 # 分配广告激活量、点击量、展示量
 function allot_ad()
 {
+    > $file_ad_cnt
+
     range_date $start_date $end_date | while read the_date; do
         # 广告产品占比
         the_month=${the_date:0:7}
         the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
-        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
-        ad_pct=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 0 {printf("%s,",$1 / 100)}' | sed 's/,$//'`
+        # 如果没有指定占比，就用活跃占比
+        if [[ -z "$the_pct" ]]; then
+            log "Use active proportion"
+            prods="$PRODS"
+            ad_pct=`stat_active`
+        else
+            log "Use preset proportion"
+            prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+            ad_pct=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 0 {printf("%s,",$1 / 100)}' | sed 's/,$//'`
+        fi
+        if [[ -z "$ad_pct" ]]; then
+            log "Warn: Invalid products proportion"
+            continue
+        fi
+        log "Products proportion: $prods $ad_pct"
 
         # 分配激活
         awk -F '\t' 'BEGIN{
@@ -160,15 +180,15 @@ function allot_ad()
                     print $1,arr_prod[i],$2,$3,arr_cnt1[i],arr_cnt2[i],arr_cnt[i],$7
                 }
             }
-        }' $file_income
+        }' $file_income >> $file_ad_cnt
 
         # 海外广告特殊处理（E-commerce1 E-commerce）
         awk -F '\t' 'BEGIN{
             OFS=FS
         } $1 == "'$the_date'" && $3 ~ /^E-commerce1$|^E-commerce$/ {
             print $1,shop,$2,$3,$4,$5,$6,$7
-        }' $file_income
-    done > $file_ad_cnt
+        }' $file_income >> $file_ad_cnt
+    done
 }
 
 # 生成一天广告展示、点击、激活
@@ -313,9 +333,13 @@ function gen_ad(){
 
         the_month=${the_date:0:7}
         the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
-        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+        if [[ -z "$the_pct" ]]; then
+            arr_prod=(${PRODS//,/ })
+        else
+            prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+            arr_prod=(${prods//,/ })
+        fi
 
-        arr_prod=(${prods//,/ })
         for prod_id in ${arr_prod[@]}; do
             if [[ `grep "^$the_date" $file_ad_cnt | grep "$prod_id"` ]]; then
                 file_visit=$DATADIR/$prod_id/visit.$the_date
@@ -345,9 +369,13 @@ function stat_ad()
     range_date $start_date $end_date | while read the_date; do
         the_month=${the_date:0:7}
         the_pct=`awk -F '\t' '$1 == "'$the_month'" {print $2}' $file_ad_pct`
-        prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+        if [[ -z "$the_pct" ]]; then
+            arr_prod=(${PRODS//,/ })
+        else
+            prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
+            arr_prod=(${prods//,/ })
+        fi
 
-        arr_prod=(${prods//,/ })
         for prod_id in ${arr_prod[@]}; do
             file_show=$DATADIR/$prod_id/show.$the_date
             file_click=$DATADIR/$prod_id/click.$the_date
@@ -386,6 +414,7 @@ function stat_ad()
       install_cnt INT
     ) ENGINE=MyISAM COMMENT='广告展现点击激活';
 
+    DELETE FROM $table_ad_stat WHERE stat_date >= ${start_date//-/} AND stat_date <= ${end_date//-/};
     LOAD DATA LOCAL INFILE '$file_ad_stat' INTO TABLE $table_ad_stat;
 
     CREATE INDEX IF NOT EXISTS idx_stat_date ON $table_ad_stat (stat_date);
@@ -452,6 +481,7 @@ function stat_ad()
       install_cnt INT
     ) ENGINE=MyISAM COMMENT='广告活跃展现点击激活';
 
+    DELETE FROM $table_ad_active WHERE stat_date >= ${start_date//-/} AND stat_date <= ${end_date//-/};
     LOAD DATA LOCAL INFILE '$file_ad_active' INTO TABLE $table_ad_active;
 
     CREATE INDEX IF NOT EXISTS idx_stat_date ON $table_ad_active (stat_date);
