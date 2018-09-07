@@ -74,12 +74,12 @@ function export_data()
 {
     if [[ ! -s $file_income ]]; then
         log "Export data to file: $file_income"
-        echo "SELECT stattime, adver, advname, adduser, shows, clicks, IF(city > '', city, NULL) FROM $table_income;" | exec_sql > $file_income
+        echo "SELECT stattime, adver, advname, adduser, shows, clicks, IF(city > '', city, NULL) FROM $table_income WHERE stattime >= '$start_date' AND stattime <= '$end_date';" | exec_sql > $file_income
     fi
 
     if [[ ! -s $file_ad_pct ]]; then
         log "Export ad pct to file: $file_ad_pct"
-        echo "SELECT month, pct FROM $table_ad_pct;" | exec_sql > $file_ad_pct
+        echo "SELECT month, pct FROM $table_ad_pct WHERE month >= '${start_date%-*}' AND month <= '${end_date%-*}';" | exec_sql > $file_ad_pct
     fi
 }
 
@@ -524,20 +524,20 @@ function main()
 
     if [[ $PROD_TYPE -eq 1 ]]; then
         table_income=l_all_income
-        file_income=$DATADIR/income_n
+        file_income=$DATADIR/income_n.${start_date//-/}-${end_date//-/}
         table_ad_pct=l_all_income_pct
-        file_ad_pct=$DATADIR/ad_pct_n
-        file_ad_cnt=$DATADIR/ad_cnt_n
+        file_ad_pct=$DATADIR/ad_pct_n.${start_date//-/}-${end_date//-/}
+        file_ad_cnt=$DATADIR/ad_cnt_n.${start_date//-/}-${end_date//-/}
         file_ad_stat=$DATADIR/ad_stat_n.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad_n
         file_ad_active=$DATADIR/ad_active_n.${start_date//-/}-${end_date//-/}
         table_ad_active=fact_ad_active_n
     else
         table_income=l_all_income
-        file_income=$DATADIR/income
+        file_income=$DATADIR/income.${start_date//-/}-${end_date//-/}
         table_ad_pct=l_all_income_pct
-        file_ad_pct=$DATADIR/ad_pct
-        file_ad_cnt=$DATADIR/ad_cnt
+        file_ad_pct=$DATADIR/ad_pct.${start_date//-/}-${end_date//-/}
+        file_ad_cnt=$DATADIR/ad_cnt.${start_date//-/}-${end_date//-/}
         file_ad_stat=$DATADIR/ad_stat.${start_date//-/}-${end_date//-/}
         table_ad_stat=fact_ad
         file_ad_active=$DATADIR/ad_active.${start_date//-/}-${end_date//-/}
