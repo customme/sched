@@ -18,16 +18,11 @@ source $DIR/shell/common/include.sh
 
 # 集群配置信息
 # ip admin_user admin_passwd roles server_id cluster_id
-HOSTS="10.10.10.152 root 7oGTb2P3nPQKHWw1ZG manager,scheduler 1 1
-10.10.10.155 root 7oGTb2P3nPQKHWw1ZG scheduler 2 1
-10.10.10.205 root 7oGTb2P3nPQKHWw1ZG scheduler 3 1"
-# 测试环境
-if [[ "$LOCAL_IP" =~ 192.168 ]]; then
-HOSTS="192.168.1.205 root 123456 manager,scheduler 1 1
-192.168.1.227 root 12345678 scheduler 2 2
-192.168.1.229 root 12345678 scheduler 3 2
-192.168.1.230 root 12345678 scheduler 4 2"
-fi
+HOSTS="10.10.10.61 root 123456 manager,scheduler 1 1
+10.10.10.64 root 123456 scheduler 2 1
+10.10.10.65 root 123456 scheduler 3 1
+10.10.10.66 root 123456 scheduler 4 1
+10.10.10.67 root 123456 scheduler 5 1"
 
 # 安装目录
 INSTALL_DIR=/usr/local
@@ -72,6 +67,19 @@ function install_env()
     # 删除别名
     echo "$HOSTS" | grep -v $LOCAL_IP | while read ip admin_user admin_passwd others; do
         autossh "$admin_passwd" ${admin_user}@${ip} "unalias cp mv rm"
+    done
+}
+
+# 安装mysql命令
+function install_mysql()
+{
+    echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id others; do
+        if [[ "$ip" = "$LOCAL_IP" ]]; then
+            # 安装mysql命令
+            type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client
+        else
+            autossh "$admin_passwd" ${admin_user}@${ip} "type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client"
+        fi
     done
 }
 
@@ -132,6 +140,9 @@ function install()
 
     # 设置环境变量
     set_env
+
+    # 出错不要立即退出
+    set +e
 }
 
 # 卸载
@@ -294,6 +305,9 @@ function main()
 
     # 安装环境
     log_fn install_env
+
+    # 安装mysql命令
+    log_fn install_mysql
 
     # 卸载集群
     [[ $remove_cmd ]] && log_fn remove
