@@ -67,12 +67,12 @@ function clean_task_pool()
 function init_task()
 {
     debug "Get tasks and instantiate one by one"
-    get_tasks | while read task_id task_cycle cycle_value start_time end_time date_serial priority max_try_times; do
+    get_tasks | while read task_id create_by task_cycle cycle_value start_time end_time date_serial priority max_try_times; do
         debug "Begin instantiate task: (task_id, task_cycle, cycle_value, start_time, end_time) ($task_id, $task_cycle, $cycle_value, $start_time, $end_time)"
         make_task_instance $task_id $task_cycle $cycle_value $start_time $end_time | while read task_id run_time; do
 
-            debug "Insert task: (task_id, run_time, task_state, priority, max_try_times) ($task_id, $run_time, $first_cycle, $TASK_STATE_INITIAL, $priority, $max_try_times)"
-            insert_task $task_id $run_time $TASK_STATE_INITIAL $priority $max_try_times
+            debug "Insert task: (task_id, run_time, task_state, priority, max_try_times, create_by) ($task_id, $run_time, $first_cycle, $TASK_STATE_INITIAL, $priority, $max_try_times, $create_by)"
+            insert_task $task_id $run_time $TASK_STATE_INITIAL $priority $max_try_times $create_by
         done
     done
 }

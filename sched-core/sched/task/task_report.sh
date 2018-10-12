@@ -53,7 +53,7 @@ function failed_task()
       a.run_time,
       c.task_group,
       c.name,
-      c.create_user,
+      c.create_by,
       c.task_cycle,
       a.tried_times,
       b.content
@@ -84,7 +84,7 @@ function time_consume()
       a.run_time,
       b.task_group,
       b.name,
-      b.create_user,
+      b.create_by,
       b.task_cycle,
       ROUND(TIMESTAMPDIFF(SECOND, a.start_time, a.end_time) / 60, 2)
     FROM t_task_pool a 

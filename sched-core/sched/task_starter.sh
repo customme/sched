@@ -31,8 +31,8 @@ function run_task_interval()
     local run_time=$(date +%Y%m%d%H%M%S)
 
     # 实例化任务
-    echo "INSERT INTO t_task_pool (task_id, run_time, task_state, priority, max_try_times, tried_times, run_server, start_time, create_time) VALUES
-    ($task_id, STR_TO_DATE('$run_time','%Y%m%d%H%i%s'), $TASK_STATE_RUNNING, ${task[0]}, ${task[1]}, 1, $SERVER_ID, NOW(), NOW());
+    echo "INSERT INTO t_task_pool (task_id, run_time, task_state, priority, max_try_times, tried_times, run_server, start_time, create_by, create_date) VALUES
+    ($task_id, STR_TO_DATE('$run_time','%Y%m%d%H%i%s'), $TASK_STATE_RUNNING, ${task[0]}, ${task[1]}, 1, $SERVER_ID, NOW(), ${task[2]}, NOW());
     " | execute_meta
 
     # 启动任务运行器

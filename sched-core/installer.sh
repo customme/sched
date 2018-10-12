@@ -31,8 +31,18 @@ INSTALL_DIR=/usr/local
 SHELL_HOME=$INSTALL_DIR/shell
 SCHED_HOME=$INSTALL_DIR/sched
 
+# 调度系统日志文件目录
+SCHED_LOG_DIR=/var/sched/log
+# 任务日志文件目录
+TASK_LOG_DIR=/var/sched/task/log
+# 任务数据文件目录
+TASK_DATA_DIR=/var/sched/task/data
+
 # 日志级别
 LOG_LEVEL=$LOG_LEVEL_INFO
+
+# 创建人
+CREATE_BY=superz
 
 
 # 安装环境
@@ -153,7 +163,9 @@ function remove()
             # 删除安装文件
             rm -rf $SHELL_HOME $SCHED_HOME
             # 删除日志文件
-            rm -f /var/log/task_manager.log /var/log/task_scheduler.log
+            rm -rf /var/log/task_manager.log /var/log/task_scheduler.log $SCHED_LOG_DIR
+            # 删除任务临时文件
+            rm -rf $TASK_LOG_DIR $TASK_DATA_DIR
 
             # 删除计划任务
             sed -i '/SHELL_HOME/d' /var/spool/cron/$USER
@@ -165,7 +177,8 @@ function remove()
             ps aux | egrep 'task_manager|task_scheduler' | grep -v grep | awk '{print $2}' | xargs -r kill -9
         else
             autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $SHELL_HOME $SCHED_HOME"
-            autossh "$admin_passwd" ${admin_user}@${ip} "rm -f /var/log/task_manager.log /var/log/task_scheduler.log"
+            autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf /var/log/task_manager.log /var/log/task_scheduler.log $SCHED_LOG_DIR"
+            autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $TASK_LOG_DIR $TASK_DATA_DIR"
 
             autossh "$admin_passwd" ${admin_user}@${ip} "sed -i '/SHELL_HOME/d' /var/spool/cron/$USER"
             autossh "$admin_passwd" ${admin_user}@${ip} "sed -i '/SCHED_HOME/d' /var/spool/cron/$USER"
@@ -185,22 +198,25 @@ function remove()
 # 初始化
 function init()
 {
+    # 出错立即退出
+    set -e
+
     # 加载数据库配置信息
     source $SCHED_HOME/common/config.sh
-    if [[ "$LOCAL_IP" =~ 192.168 ]]; then
-        source $SCHED_HOME/common/config-test.sh
-    fi
 
     # 初始化数据
     mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD < $SCHED_HOME/sql/sched.sql
 
     # 插入服务器数据
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id cluster_id; do
-        echo "INSERT IGNORE INTO t_server (id, cluster_id, ip) VALUES ($server_id, $cluster_id, '$ip');"
+        echo "INSERT IGNORE INTO t_server (id, create_by, create_date, cluster_id, ip) VALUES ($server_id, '$CREATE_BY', NOW(), $cluster_id, '$ip');"
     done | mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME
 
     # 启动
     start
+
+    # 出错不要立即退出
+    set +e
 }
 
 # 启动
@@ -267,7 +283,7 @@ function restart()
 # 打印用法
 function print_usage()
 {
-    echo "Usage: $0 [-i install] [-r remove<all/sched>] [-s start<init/start/stop/restart>] [-v verbose]"
+    echo "Usage: $0 [-i install<sched/mysql>] [-r remove<sched/all>] [-s start<init/start/stop/restart>] [-v verbose]"
 }
 
 # 管理
@@ -283,13 +299,17 @@ function main()
         exit 1
     fi
 
-    # -i install 安装
-    # -r [all/sched] 卸载
+    # -i [sched/mysql] 安装
+    # -r [sched/all] 卸载
     # -s [init/start/stop/restart] 初始化/启动/停止/重启
     # -v debug模式
-    while getopts "ir:s:v" name; do
+    while getopts "i:r:s:v" name; do
         case "$name" in
             i)
+                local command="$OPTARG"
+                if [[ "$command" =~ "mysql" ]]; then
+                    mysql_flag=1
+                fi
                 install_flag=1;;
             r)
                 remove_cmd="$OPTARG";;
@@ -306,14 +326,14 @@ function main()
     # 安装环境
     log_fn install_env
 
-    # 安装mysql命令
-    log_fn install_mysql
-
     # 卸载集群
     [[ $remove_cmd ]] && log_fn remove
 
     # 安装集群
     [[ $install_flag ]] && log_fn install
+
+    # 安装mysql命令
+    [[ $mysql_flag ]] && log_fn install_mysql
 
     # 启动集群
     [[ $start_cmd ]] && log_fn $start_cmd

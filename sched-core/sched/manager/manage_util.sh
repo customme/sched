@@ -40,8 +40,8 @@ function split_log()
     local the_month=$(date +%Y%m)
     local prev_month=$(date +%Y%m -d "1 month ago")
     echo "CREATE TABLE IF NOT EXISTS t_task_log_$prev_month LIKE t_task_log;
-    INSERT INTO t_task_log_$prev_month SELECT * FROM t_task_log WHERE create_time >= ${prev_month}01 AND create_time < ${the_month}01;
-    DELETE FROM t_task_log WHERE create_time < ${the_month}01;
+    INSERT INTO t_task_log_$prev_month SELECT * FROM t_task_log WHERE log_time >= ${prev_month}01 AND log_time < ${the_month}01;
+    DELETE FROM t_task_log WHERE log_time < ${the_month}01;
     " | execute_meta
 }
 
@@ -50,6 +50,7 @@ function get_tasks()
 {
     echo "SELECT
       a.id _task_id,
+      a.create_by _create_by,
       a.task_cycle,
       IF(a.cycle_value > '', a.cycle_value, NULL) _cycle_value,
       DATE_FORMAT(
@@ -481,7 +482,7 @@ function check_dependence()
 # 实例化任务
 function insert_task()
 {
-    if [ $# -ne 5 ]; then
+    if [ $# -ne 6 ]; then
         error "Invalid arguments : insert_task $@"
         exit 1
     fi
@@ -491,8 +492,9 @@ function insert_task()
     local task_state="$3"
     local priority="$4"
     local max_try_times="$5"
+    local create_by="$6"
 
-    echo "INSERT IGNORE INTO t_task_pool (task_id, run_time, task_state, priority, max_try_times, create_time) 
-    VALUES ($task_id, STR_TO_DATE('$run_time', '%Y%m%d%H%i%s'), $task_state, $priority, $max_try_times, NOW());
+    echo "INSERT IGNORE INTO t_task_pool (task_id, run_time, task_state, priority, max_try_times, create_by, create_date) 
+    VALUES ($task_id, STR_TO_DATE('$run_time', '%Y%m%d%H%i%s'), $task_state, $priority, $max_try_times, '$create_by', NOW());
     " | execute_meta
 }

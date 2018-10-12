@@ -67,7 +67,7 @@ function get_task()
 {
     local task_id="$1"
 
-    echo "SELECT priority, max_try_times FROM t_task WHERE id = $task_id;" | execute_meta
+    echo "SELECT priority, max_try_times, create_by FROM t_task WHERE id = $task_id;" | execute_meta
 }
 
 # 获取任务运行器

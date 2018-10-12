@@ -2,18 +2,28 @@ CREATE DATABASE IF NOT EXISTS `sched` DEFAULT CHARACTER SET utf8;
 
 USE `sched`;
 
+SET @CREATE_BY = 'superz';
+
 DROP TABLE IF EXISTS `t_cluster`;
 CREATE TABLE `t_cluster` (
-  `id` tinyint(4) NOT NULL,
+  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `name` varchar(64),
   `description` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='集群';
-INSERT INTO `t_cluster` (`id`, `name`) VALUES (1, '监控集群');
+INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES (1, @CREATE_BY, NOW(), '监控集群');
 
 DROP TABLE IF EXISTS `t_server`;
 CREATE TABLE `t_server` (
-  `id` smallint(6) NOT NULL,
+  `id` smallint(6) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `name` varchar(64),
   `cluster_id` tinyint(4) NOT NULL COMMENT '集群ID',
   `ip` varchar(64) NOT NULL COMMENT 'IP地址',
@@ -28,6 +38,10 @@ CREATE TABLE `t_server` (
 DROP TABLE IF EXISTS `t_db_conn`;
 CREATE TABLE `t_db_conn` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `name` varchar(255),
   `db_name` varchar(64) NOT NULL COMMENT '数据库名',
   `type_id` tinyint(4) NOT NULL COMMENT '数据库类型ID',
@@ -38,60 +52,68 @@ CREATE TABLE `t_db_conn` (
   `port` int(11) COMMENT '数据库端口号',
   `charset` varchar(32) COMMENT '数据库编码',
   `description` varchar(255),
-  `create_user` varchar(64) NOT NULL,
-  `create_time` datetime NOT NULL,
-  `update_user` varchar(64),
-  `update_time` datetime,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据库连接';
 
 DROP TABLE IF EXISTS `t_db_type`;
 CREATE TABLE `t_db_type` (
-  `id` tinyint(4) NOT NULL,
+  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `code` varchar(64) NOT NULL,
   `description` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据库类型';
-INSERT INTO `t_db_type` (`id`, `code`, `description`) VALUES 
-(1, 'MYSQL', 'MySQL'),
-(2, 'ORACLE', 'Oracle'),
-(3, 'MSSQL', 'Microsoft SQL Server'),
-(4, 'SYBASE', 'Sybase'),
-(5, 'POSTGRESQL', 'PostgreSQL'),
-(6, 'DB2', 'IBM DB2'),
-(7, 'HIVE', 'Apache Hive'),
-(8, 'DERBY', 'Apache Derby'),
-(9, 'FS', 'Local File System'),
-(10, 'HDFS', 'Apache Hadoop Distributed File System'),
-(11, 'SAIKU', 'Saiku');
+INSERT INTO `t_db_type` (`id`, `create_by`, `create_date`, `code`, `description`) VALUES 
+(1, @CREATE_BY, NOW(), 'MYSQL', 'MySQL'),
+(2, @CREATE_BY, NOW(), 'ORACLE', 'Oracle'),
+(3, @CREATE_BY, NOW(), 'MSSQL', 'Microsoft SQL Server'),
+(4, @CREATE_BY, NOW(), 'SYBASE', 'Sybase'),
+(5, @CREATE_BY, NOW(), 'POSTGRESQL', 'PostgreSQL'),
+(6, @CREATE_BY, NOW(), 'DB2', 'IBM DB2'),
+(7, @CREATE_BY, NOW(), 'HIVE', 'Apache Hive'),
+(8, @CREATE_BY, NOW(), 'DERBY', 'Apache Derby'),
+(9, @CREATE_BY, NOW(), 'FS', 'Local File System'),
+(10, @CREATE_BY, NOW(), 'HDFS', 'Apache Hadoop Distributed File System'),
+(11, @CREATE_BY, NOW(), 'SAIKU', 'Saiku');
 
 DROP TABLE IF EXISTS `t_task_type`;
 CREATE TABLE `t_task_type` (
-  `id` tinyint(4) NOT NULL,
+  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `code` varchar(64) NOT NULL,
   `task_executor` varchar(255) NOT NULL COMMENT '任务执行器',
   `max_try_times` tinyint(4) NOT NULL DEFAULT '3' COMMENT '最多尝试次数',
   `description` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务类型';
-INSERT INTO `t_task_type` (`id`, `code`, `task_executor`, `description`) VALUES 
-(1, 'dummy', 'dummy.sh', '空任务，什么也不做，测试用'),
-(2, 'mysql2mysql', 'mysql/mysql2mysql.sh', 'MySQL到MySQL数据同步'),
-(3, 'mysql2hive', 'hive/mysql2hive.sh', 'MySQL到Hive数据同步'),
-(4, 'hive2mysql', 'mysql/hive2mysql.sh', 'Hive到MySQL数据同步'),
-(5, 'mysql_exec', 'mysql/exec_sql.sh', '执行MySQL语句'),
-(6, 'shell_exec', 'script/exec_shell.sh', '执行Shell脚本'),
-(7, 'mysql_loader', 'mysql/file_loader.sh', '文件入库mysql'),
-(8, 'saiku_exec', 'saiku/exec_mdx.sh', '模拟Saiku执行MDX'),
-(9, 'saiku_refresh', 'saiku/refresh_cube.sh', '刷新Saiku Cube'),
-(10, 'mysql_backup', 'mysql/backup.sh', '备份MySQL表到文件'),
-(11, 'url_monitor', 'monitor/url_monitor.sh', 'URL监控告警'),
-(12, 'spark_submit', 'spark/spark_submit.sh', '提交spark任务'),
-(13, 'hdfs_loader', 'hadoop/hdfs_loader.sh', '本地文件上传至hdfs');
+INSERT INTO `t_task_type` (`id`, `create_by`, `create_date`, `code`, `task_executor`, `description`) VALUES 
+(1, @CREATE_BY, NOW(), 'dummy', 'dummy.sh', '空任务，什么也不做，测试用'),
+(2, @CREATE_BY, NOW(), 'mysql2mysql', 'mysql/mysql2mysql.sh', 'MySQL到MySQL数据同步'),
+(3, @CREATE_BY, NOW(), 'mysql2hive', 'hive/mysql2hive.sh', 'MySQL到Hive数据同步'),
+(4, @CREATE_BY, NOW(), 'hive2mysql', 'mysql/hive2mysql.sh', 'Hive到MySQL数据同步'),
+(5, @CREATE_BY, NOW(), 'mysql_exec', 'mysql/exec_sql.sh', '执行MySQL语句'),
+(6, @CREATE_BY, NOW(), 'shell_exec', 'script/exec_shell.sh', '执行Shell脚本'),
+(7, @CREATE_BY, NOW(), 'mysql_loader', 'mysql/file_loader.sh', '文件入库mysql'),
+(8, @CREATE_BY, NOW(), 'saiku_exec', 'saiku/exec_mdx.sh', '模拟Saiku执行MDX'),
+(9, @CREATE_BY, NOW(), 'saiku_refresh', 'saiku/refresh_cube.sh', '刷新Saiku Cube'),
+(10, @CREATE_BY, NOW(), 'mysql_backup', 'mysql/backup.sh', '备份MySQL表到文件'),
+(11, @CREATE_BY, NOW(), 'url_monitor', 'monitor/url_monitor.sh', 'URL监控告警'),
+(12, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务'),
+(13, @CREATE_BY, NOW(), 'hdfs_loader', 'hadoop/hdfs_loader.sh', '本地文件上传至hdfs');
 
 DROP TABLE IF EXISTS `t_task`;
 CREATE TABLE `t_task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `name` varchar(64),
   `task_group` varchar(64) NOT NULL DEFAULT 'default' COMMENT '任务组',
   `type_id` tinyint(4) NOT NULL COMMENT '任务类型ID',
@@ -108,32 +130,39 @@ CREATE TABLE `t_task` (
   `end_time` datetime COMMENT '结束时间',
   `first_time` datetime COMMENT '首次运行时间',
   `description` varchar(255),
-  `create_user` varchar(64) NOT NULL,
-  `create_time` datetime NOT NULL,
-  `update_user` varchar(64),
-  `update_time` datetime,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务';
-INSERT INTO `t_task` (`id`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`, `create_user`, `create_time`) VALUES 
-(1, '任务执行报告', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR, 'superz', NOW()),
-(2, '调度系统元数据库备份', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR, 'superz', NOW());
+INSERT INTO `t_task` (`id`, `create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
+(1, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
+(2, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR);
 
 DROP TABLE IF EXISTS `t_task_ext`;
 CREATE TABLE `t_task_ext` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `prop_name` varchar(64) NOT NULL COMMENT '属性名',
   `prop_value` text COMMENT '属性值',
-  PRIMARY KEY (`task_id`, `prop_name`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`task_id`, `prop_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务扩展属性';
-INSERT INTO `t_task_ext` (`task_id`, `prop_name`, `prop_value`) VALUES 
-(1, 'tar_cmd', 'source $SCHED_HOME/task/task_report.sh'),
-(1, 'is_alarm', '1'),
-(1, 'alarm_way', '0'),
-(1, 'sub_emails', 'zhangchao@9zhitx.com'),
-(2, 'tar_cmd', 'source $SCHED_HOME/task/db_backup.sh');
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), 1, 'tar_cmd', 'source $SCHED_HOME/task/task_report.sh'),
+(@CREATE_BY, NOW(), 1, 'is_alarm', '1'),
+(@CREATE_BY, NOW(), 1, 'alarm_way', '0'),
+(@CREATE_BY, NOW(), 1, 'sub_emails', 'zhangchao@9zhitx.com'),
+(@CREATE_BY, NOW(), 2, 'tar_cmd', 'source $SCHED_HOME/task/db_backup.sh');
 
 DROP TABLE IF EXISTS `t_task_pool`;
 CREATE TABLE `t_task_pool` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `run_time` datetime NOT NULL COMMENT '运行时间',
   `task_state` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务状态(0:等待, 1:就绪, 2:已经分配, 3:正在运行, 6:运行成功, 8:被杀死, 9:运行失败)',
@@ -145,29 +174,34 @@ CREATE TABLE `t_task_pool` (
   `extra_param` varchar(255) COMMENT '额外参数',
   `start_time` datetime COMMENT '开始时间',
   `end_time` datetime COMMENT '结束时间',
-  `create_time` datetime NOT NULL,
-  `update_time` datetime,
-  PRIMARY KEY (`task_id`, `run_time`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`task_id`, `run_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务实例';
 
 DROP TABLE IF EXISTS `t_task_link`;
 CREATE TABLE `t_task_link` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `create_by` varchar(50) COMMENT '创建人',
+  `create_date` datetime COMMENT '创建日期',
+  `update_by` varchar(50) COMMENT '更新人',
+  `update_date` datetime COMMENT '更新日期',
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `task_pid` int(11) NOT NULL COMMENT '父任务ID',
   `link_type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '依赖类型(0:最后一个周期, 1:全周期, 2:任意一个周期)',
-  `create_user` varchar(64) NOT NULL COMMENT '创建者',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`task_id`, `task_pid`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`task_id`, `task_pid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务依赖关系';
 
 DROP TABLE IF EXISTS `t_task_log`;
 CREATE TABLE `t_task_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `run_time` datetime NOT NULL COMMENT '运行时间',
   `seq_no` int(11) COMMENT '流水号',
   `level` tinyint(4) NOT NULL DEFAULT '0' COMMENT '日志级别(0:调试日志, 1:标准日志, 2:警告日志, 3:错误日志)',
   `content` text COMMENT '日志内容',
-  `create_time` datetime NOT NULL COMMENT '创建时间'
+  `log_time` datetime COMMENT '记录时间',
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='任务运行日志';
 
 -- 获取任务周期为'interval'的任务
@@ -177,6 +211,7 @@ DROP PROCEDURE IF EXISTS `p_get_task_interval`;
 CREATE PROCEDURE `p_get_task_interval` (in_server INT)
 BEGIN
   DECLARE _task_id INT;
+  DECLARE _create_by VARCHAR(50);
 
   SET @TASK_STATUS_NORMAL = 1;
   SET @TASK_CYCLE_INTERVAL = 'interval';
@@ -184,8 +219,8 @@ BEGIN
   SET @TASK_STATE_RUNNING = 3;
 
   -- 获取任务
-  SELECT t.id INTO _task_id FROM 
-  ( SELECT a.id FROM t_task a 
+  SELECT t.id, t.create_by INTO _task_id, _create_by FROM 
+  ( SELECT a.id, a.create_by FROM t_task a 
     INNER JOIN t_server b 
     INNER JOIN t_cluster c 
     ON a.cluster_id = c.id 
@@ -216,7 +251,7 @@ BEGIN
   -- 插入任务实例，标记该任务已经被分配
   IF _task_id > 0 THEN
     SET @run_time = NOW();
-    INSERT INTO t_task_pool (task_id, run_time, task_state, run_server, create_time) VALUES(_task_id, @run_time, @TASK_STATE_ASSIGNED, in_server, @run_time);
+    INSERT INTO t_task_pool (task_id, run_time, task_state, run_server, create_by, create_date) VALUES(_task_id, @run_time, @TASK_STATE_ASSIGNED, in_server, _create_by, @run_time);
     -- 返回任务
     SELECT id, DATE_FORMAT(@run_time, '%Y%m%d%H%i%s'), cycle_value FROM t_task WHERE id = _task_id;
   END IF;
@@ -273,7 +308,7 @@ LIMIT ?";
       LEAVE read_loop;
     END IF;
     UPDATE t_task_pool 
-    SET task_state = @TASK_STATE_ASSIGNED, start_time = NULL, end_time = NULL, tried_times = tried_times + 1, run_server = @server_id, update_time = NOW() 
+    SET task_state = @TASK_STATE_ASSIGNED, start_time = NULL, end_time = NULL, tried_times = tried_times + 1, run_server = @server_id, update_date = NOW() 
     WHERE task_id = _task_id AND run_time = _run_time;
   END LOOP;
   CLOSE cur;
@@ -291,7 +326,7 @@ BEGIN
   DECLARE cur CURSOR FOR SELECT task_id FROM t_task_link WHERE task_pid = in_task_id;
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-  INSERT IGNORE INTO tmp_links SELECT task_pid, task_id, link_type, in_depth, create_user, create_time FROM t_task_link WHERE task_pid = in_task_id;
+  INSERT IGNORE INTO tmp_links SELECT task_pid, task_id, link_type, in_depth, create_by, create_date FROM t_task_link WHERE task_pid = in_task_id;
 
   OPEN cur;
   FETCH cur INTO _task_id;
@@ -306,13 +341,13 @@ END;;
 DROP PROCEDURE IF EXISTS `p_get_links`;
 CREATE PROCEDURE `p_get_links` (in_task_id INT)
 BEGIN
-  CREATE TEMPORARY TABLE IF NOT EXISTS tmp_links (task_pid INT, task_id INT, link_type INT, depth INT, create_user VARCHAR(64), create_time DATETIME);
+  CREATE TEMPORARY TABLE IF NOT EXISTS tmp_links (task_pid INT, task_id INT, link_type INT, depth INT, create_by VARCHAR(50), create_date DATETIME);
   DELETE FROM tmp_links;
 
   SET @@max_sp_recursion_depth = 255;
   CALL p_find_links(in_task_id, 1);
 
-  SELECT task_pid, task_id, link_type, depth, create_user, create_time FROM tmp_links ORDER BY depth, task_pid, task_id;
+  SELECT task_pid, task_id, link_type, depth, create_by, create_date FROM tmp_links ORDER BY depth, task_pid, task_id;
 END;;
 
 -- 查找父任务依赖
@@ -324,7 +359,7 @@ BEGIN
   DECLARE cur CURSOR FOR SELECT task_pid FROM t_task_link WHERE task_id = in_task_id;
   DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-  INSERT IGNORE INTO tmp_links SELECT task_id, task_pid, link_type, in_depth, create_user, create_time FROM t_task_link WHERE task_id = in_task_id;
+  INSERT IGNORE INTO tmp_links SELECT task_id, task_pid, link_type, in_depth, create_by, create_date FROM t_task_link WHERE task_id = in_task_id;
 
   OPEN cur;
   FETCH cur INTO _task_id;
@@ -339,13 +374,13 @@ END;;
 DROP PROCEDURE IF EXISTS `p_get_plinks`;
 CREATE PROCEDURE `p_get_plinks` (in_task_id INT)
 BEGIN
-  CREATE TEMPORARY TABLE IF NOT EXISTS tmp_links (task_id INT, task_pid INT, link_type INT, depth INT, create_user VARCHAR(64), create_time DATETIME);
+  CREATE TEMPORARY TABLE IF NOT EXISTS tmp_links (task_id INT, task_pid INT, link_type INT, depth INT, create_by VARCHAR(50), create_date DATETIME);
   DELETE FROM tmp_links;
 
   SET @@max_sp_recursion_depth = 255;
   CALL p_find_plinks(in_task_id, 1);
 
-  SELECT task_id, task_pid, link_type, depth, create_user, create_time FROM tmp_links ORDER BY depth, task_id, task_pid;
+  SELECT task_id, task_pid, link_type, depth, create_by, create_date FROM tmp_links ORDER BY depth, task_id, task_pid;
 END;;
 
 -- 检测回路

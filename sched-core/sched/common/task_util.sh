@@ -51,7 +51,7 @@ function update_task_instance()
     local run_time="$2"
     local updates="$3"
 
-    echo "UPDATE t_task_pool SET $updates, update_time = NOW() 
+    echo "UPDATE t_task_pool SET $updates, update_date = NOW() 
     WHERE task_id = $task_id 
     AND run_time = STR_TO_DATE('$run_time','%Y%m%d%H%i%s');
     SELECT ROW_COUNT();
@@ -159,7 +159,7 @@ function log_task()
     content=`echo "$content" | mysql_escape`
 
     # 写到数据库
-    echo "INSERT INTO t_task_log (task_id, run_time, seq_no, level, content, create_time) 
+    echo "INSERT INTO t_task_log (task_id, run_time, seq_no, level, content, log_time) 
     VALUES ($task_id, STR_TO_DATE('$run_time','%Y%m%d%H%i%s'), $seq_no, $level, '$content', NOW());
     " | execute_meta
 }
