@@ -171,7 +171,7 @@ CREATE TABLE `t_task_pool` (
   `tried_times` tinyint(4) NOT NULL DEFAULT '0' COMMENT '已经尝试次数',
   `redo_flag` tinyint(4) NOT NULL DEFAULT '0' COMMENT '重做标记(1表示重做)',
   `run_server` int(11) COMMENT '运行服务器',
-  `extra_param` varchar(255) COMMENT '额外参数',
+  `run_params` varchar(255) COMMENT '运行时参数',
   `start_time` datetime COMMENT '开始时间',
   `end_time` datetime COMMENT '结束时间',
   PRIMARY KEY (`id`),
