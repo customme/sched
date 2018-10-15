@@ -67,7 +67,7 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
    */
   def logTask(level: Int, content: String) {
     val conn = DBUtil.getConn
-    val sql = "INSERT INTO t_task_log (task_id, run_time, seq_no, level, content, create_time) VALUES (?, ?, ?, ?, ?, ?)"
+    val sql = "INSERT INTO t_task_log (task_id, run_time, seq_no, level, content, log_time) VALUES (?, ?, ?, ?, ?, ?)"
     val ps: PreparedStatement = conn.prepareStatement(sql)
 
     ps.setInt(1, task.taskId)
@@ -125,7 +125,7 @@ object TaskExecutor extends Log {
    * 获取任务
    */
   def getTask(taskId: Int, runTime: String) = {
-    val sql = "SELECT a.name, a.task_cycle, IF(b.run_time = b.first_time, 1, 0) is_first, b.redo_flag, b.extra_param" +
+    val sql = "SELECT a.name, a.task_cycle, IF(b.run_time = a.first_time, 1, 0) is_first, b.redo_flag, b.run_params" +
       " FROM t_task a INNER JOIN t_task_pool b" +
       " ON a.id = b.task_id AND a.id = ? AND b.run_time = ?"
     ps = conn.prepareStatement(sql)

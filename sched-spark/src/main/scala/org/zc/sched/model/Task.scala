@@ -39,12 +39,12 @@ object Task {
   val TASK_CYCLE_INSTANT = "instant"
 
   def apply(taskId: Int, runTime: String, rs: ResultSet): Task = {
-    val extraParam = rs.getString("extra_param")
-    val _extraParam = if (StringUtils.isNotBlank(extraParam)) {
+    val runParams = rs.getString("run_params")
+    val _runParams = if (StringUtils.isNotBlank(runParams)) {
       mapper.configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-      parse(extraParam).values.asInstanceOf[Map[String, Any]]
+      parse(runParams).values.asInstanceOf[Map[String, Any]]
     } else Map[String, Any]()
 
-    Task(taskId, runTime, rs.getString("name"), rs.getString("task_cycle"), rs.getBoolean("is_first"), rs.getBoolean("redo_flag"), _extraParam)
+    Task(taskId, runTime, rs.getString("name"), rs.getString("task_cycle"), rs.getBoolean("is_first"), rs.getBoolean("redo_flag"), _runParams)
   }
 }
