@@ -40,7 +40,7 @@ function main()
     seq_no=$(date +'%s')
 
     # 更新任务状态为“正在运行”
-    update_task_instance $task_id $run_time "task_state = $TASK_STATE_RUNNING, start_time = NOW()" > /dev/null
+    update_task_instance $task_id $run_time "task_state = $TASK_STATE_RUNNING, start_time = NOW(), end_time = NULL" > /dev/null
 
     # 休眠1秒，避免产生重复任务实例
     sleep 1

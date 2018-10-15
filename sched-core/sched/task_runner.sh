@@ -183,7 +183,7 @@ function main()
     fi
 
     # 更新任务状态为“正在运行”
-    result=$(update_task_instance $task_id $run_time "task_state = $TASK_STATE_RUNNING, start_time = NOW()")
+    result=$(update_task_instance $task_id $run_time "task_state = $TASK_STATE_RUNNING, start_time = NOW(), end_time = NULL")
     if [[ $result -ne 1 ]]; then
         error "Update task state failed (task_id, run_time) ($task_id, $run_time)"
         exit 1
