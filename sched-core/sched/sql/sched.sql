@@ -63,21 +63,23 @@ CREATE TABLE `t_db_type` (
   `update_by` varchar(50) COMMENT '更新人',
   `update_date` datetime COMMENT '更新日期',
   `code` varchar(64) NOT NULL,
+  `default_port` int(11) COMMENT '默认端口',
+  `default_charset` varchar(32) COMMENT '默认字符集',
   `description` varchar(255),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='数据库类型';
-INSERT INTO `t_db_type` (`id`, `create_by`, `create_date`, `code`, `description`) VALUES 
-(1, @CREATE_BY, NOW(), 'MYSQL', 'MySQL'),
-(2, @CREATE_BY, NOW(), 'ORACLE', 'Oracle'),
-(3, @CREATE_BY, NOW(), 'MSSQL', 'Microsoft SQL Server'),
-(4, @CREATE_BY, NOW(), 'SYBASE', 'Sybase'),
-(5, @CREATE_BY, NOW(), 'POSTGRESQL', 'PostgreSQL'),
-(6, @CREATE_BY, NOW(), 'DB2', 'IBM DB2'),
-(7, @CREATE_BY, NOW(), 'HIVE', 'Apache Hive'),
-(8, @CREATE_BY, NOW(), 'DERBY', 'Apache Derby'),
-(9, @CREATE_BY, NOW(), 'FS', 'Local File System'),
-(10, @CREATE_BY, NOW(), 'HDFS', 'Apache Hadoop Distributed File System'),
-(11, @CREATE_BY, NOW(), 'SAIKU', 'Saiku');
+INSERT INTO `t_db_type` (`id`, `create_by`, `create_date`, `code`, `default_port`, `default_charset`, `description`) VALUES 
+(1, @CREATE_BY, NOW(), 'MYSQL', 3306, 'utf8', 'MySQL'),
+(2, @CREATE_BY, NOW(), 'ORACLE', 1521, 'UTF-8', 'Oracle'),
+(3, @CREATE_BY, NOW(), 'MSSQL', 1433, NULL, 'Microsoft SQL Server'),
+(4, @CREATE_BY, NOW(), 'SYBASE', 5000, NULL, 'Sybase'),
+(5, @CREATE_BY, NOW(), 'POSTGRESQL', 5432, 'utf-8', 'PostgreSQL'),
+(6, @CREATE_BY, NOW(), 'DB2', 5000, NULL, 'IBM DB2'),
+(7, @CREATE_BY, NOW(), 'HIVE', 10000, NULL, 'Apache Hive'),
+(8, @CREATE_BY, NOW(), 'DERBY', 1527, NULL, 'Apache Derby'),
+(9, @CREATE_BY, NOW(), 'FS', NULL, NULL, 'Local File System'),
+(10, @CREATE_BY, NOW(), 'HDFS', 8082, NULL, 'Apache Hadoop Distributed File System'),
+(11, @CREATE_BY, NOW(), 'SAIKU', 8080, NULL, 'Saiku');
 
 DROP TABLE IF EXISTS `t_task_type`;
 CREATE TABLE `t_task_type` (
