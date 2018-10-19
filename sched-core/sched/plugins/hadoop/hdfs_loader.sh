@@ -35,18 +35,18 @@ function exec_hdfs()
 function execute()
 {
     # 最小记录数
-    if [[ -n "$min_row_count" ]]; then
+    if [[ -n "$min_count" ]]; then
         # 检测数据行数
         info "Check data amount"
         local row_count=`find $src_dir -maxdepth 1 -type f -name "${src_file:-*}" | xargs -r cat | awk -F '\t' '{
             print $"'$time_index'"
         }' | grep "$prev_day1 $the_hour" | wc -l`
 
-        if [[ $row_count -lt $min_row_count ]]; then
-            error "Can not fetch enough data, expected minimum row count: $min_row_count, but got: $row_count"
+        if [[ $row_count -lt $min_count ]]; then
+            error "Can not fetch enough data, expected minimum row count: $min_count, but got: $row_count"
             # 短信告警
             if [[ $is_alarm -gt 0 && $alarm_way -gt 0 && -n "$sub_mobiles" ]]; then
-                echo "从数据源：$src_dir/$src_file获取不到足够数据，预期最小行数：$min_row_count，实际行数：$row_count" > $log_path/sms.tmp
+                echo "从数据源：$src_dir/$src_file获取不到足够数据，预期最小行数：$min_count，实际行数：$row_count" > $log_path/sms.tmp
             fi
             return 1
         fi

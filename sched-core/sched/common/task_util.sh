@@ -116,9 +116,9 @@ function get_db()
     a.hostname,
     a.port,
     a.username,
-    a.password,
+    IF(a.password > '', a.password, NULL),
     a.db_name,
-    a.charset,
+    IF(a.charset > '', a.charset, NULL),
     a.conn_type 
     FROM t_db_conn a 
     INNER JOIN t_db_type b 

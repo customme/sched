@@ -15,7 +15,7 @@ source $SCHED_HOME/plugins/db_util.sh
 function check_cond()
 {
     # 最小记录数
-    if [[ $min_row_count -gt 0 ]]; then
+    if [[ $min_count -gt 0 ]]; then
         # 总记录数
         debug "Get data count"
         local total_count=$(execute_src "SELECT COUNT(*) FROM $src_table WHERE 1 = 1 $src_filter")
@@ -23,11 +23,11 @@ function check_cond()
         if [[ -z "$total_count" ]]; then
             return 1
         fi
-        if [[ $total_count -lt $min_row_count ]]; then
-            error "Can not fetch enough data, expected minimum row count: $min_row_count, but got: $total_count"
+        if [[ $total_count -lt $min_count ]]; then
+            error "Can not fetch enough data, expected minimum row count: $min_count, but got: $total_count"
             # 短信告警
             if [[ $is_alarm -gt 0 && $alarm_way -gt 0 && -n "$sub_mobiles" ]]; then
-                echo "从服务器：${src_db[1]}，数据库：${src_db[5]}，表：${src_table}，不能获取足够的数据，预期最小行数为：$min_row_count，但只得到：$total_count" > $log_path/sms.tmp
+                echo "从服务器：${src_db[1]}，数据库：${src_db[5]}，表：${src_table}，不能获取足够的数据，预期最小行数为：$min_count，但只得到：$total_count" > $log_path/sms.tmp
             fi
             return 1
         fi

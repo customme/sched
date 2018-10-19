@@ -20,11 +20,11 @@ function check_table()
 {
     # 总记录数
     local total_count=$(execute_src "SELECT COUNT(*) FROM $src_table WHERE 1 = 1 $src_filter")
-    if [[ $total_count -lt $min_row_count ]]; then
-        error "Can not fetch enough data, expected minimum row count: $min_row_count, but got: $total_count"
+    if [[ $total_count -lt $min_count ]]; then
+        error "Can not fetch enough data, expected minimum row count: $min_count, but got: $total_count"
         # 短信告警
         if [[ $is_alarm -gt 0 && $alarm_way -gt 0 && -n "$sub_mobiles" ]]; then
-            echo "从服务器：${src_db[1]}，数据库：${src_db[5]}，表：${src_table}，不能获取足够的数据，预期最小行数为：$min_row_count，但只得到：$total_count" > $log_path/sms.tmp
+            echo "从服务器：${src_db[1]}，数据库：${src_db[5]}，表：${src_table}，不能获取足够的数据，预期最小行数为：$min_count，但只得到：$total_count" > $log_path/sms.tmp
         fi
         return 1
     fi
@@ -82,7 +82,7 @@ function execute()
     fi
 
     # 最小记录数
-    min_row_count=${min_row_count:-1}
+    min_count=${min_count:-1}
 
     # 出错不要立即退出
     set +e

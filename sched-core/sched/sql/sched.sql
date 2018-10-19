@@ -135,8 +135,9 @@ CREATE TABLE `t_task` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务';
 INSERT INTO `t_task` (`id`, `create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
-(1, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
-(2, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR);
+(1, @CREATE_BY, NOW(), '空任务', '调度系统', 1, 1, 'hour', 1, NOW()),
+(2, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
+(3, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR);
 
 DROP TABLE IF EXISTS `t_task_ext`;
 CREATE TABLE `t_task_ext` (

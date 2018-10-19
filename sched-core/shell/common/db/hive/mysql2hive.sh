@@ -81,7 +81,7 @@ function get_table_comment()
 function build_create_sql()
 {
     echo "CREATE TABLE IF NOT EXISTS $tar_table ("
-    paste $log_path/$src_table.cols $log_path/$src_table.cmts | sed '$s/,$//'
+    paste -d ' ' $log_path/$src_table.cols $log_path/$src_table.cmts | sed '$s/,$//'
     echo ") COMMENT '`get_table_comment`' PARTITIONED BY (biz_date STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE;"
 }
 
