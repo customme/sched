@@ -91,7 +91,7 @@ CREATE TABLE `t_task_type` (
   `code` varchar(64) NOT NULL,
   `task_executor` varchar(255) NOT NULL COMMENT '任务执行器',
   `max_try_times` tinyint(4) NOT NULL DEFAULT '3' COMMENT '最多尝试次数',
-  `description` varchar(255),
+  `description` varchar(500),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务类型';
 INSERT INTO `t_task_type` (`id`, `create_by`, `create_date`, `code`, `task_executor`, `description`) VALUES 
@@ -121,11 +121,11 @@ CREATE TABLE `t_task` (
   `type_id` tinyint(4) NOT NULL COMMENT '任务类型ID',
   `task_status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务状态(0:暂停, 1:正常, -1:删除)',
   `task_cycle` varchar(16) NOT NULL COMMENT '任务周期(day:天, week:周, month:月, hour:小时, interval:时间间隔, instant:即时)',
-  `cycle_value` varchar(64) COMMENT '周期值',
+  `cycle_value` varchar(16) COMMENT '周期值',
   `date_serial` tinyint(1) NOT NULL DEFAULT '0' COMMENT '时间串行(1表示串行)',
   `priority` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务优先级(值越小优先级越高)',
   `max_try_times` tinyint(4) NOT NULL DEFAULT '3' COMMENT '最多尝试次数',
-  `timeout` smallint(6) NOT NULL DEFAULT '120' COMMENT '超时时间(分)',
+  `timeout` int(11) NOT NULL DEFAULT '1800' COMMENT '超时时间(秒)',
   `cluster_id` tinyint(4) COMMENT '集群ID',
   `server_id` smallint(6) COMMENT '服务器ID',
   `start_time` datetime NOT NULL COMMENT '开始时间',
@@ -256,7 +256,7 @@ BEGIN
     SET @run_time = NOW();
     INSERT INTO t_task_pool (task_id, run_time, task_state, run_server, create_by, create_date) VALUES(_task_id, @run_time, @TASK_STATE_ASSIGNED, in_server, _create_by, @run_time);
     -- 返回任务
-    SELECT id, DATE_FORMAT(@run_time, '%Y%m%d%H%i%s'), cycle_value FROM t_task WHERE id = _task_id;
+    SELECT id, DATE_FORMAT(@run_time, '%Y%m%d%H%i%s'), cycle_value, timeout FROM t_task WHERE id = _task_id;
   END IF;
 END;;
 

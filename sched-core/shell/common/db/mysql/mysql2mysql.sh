@@ -131,7 +131,7 @@ function get_data()
 function load_data()
 {
     # 生成装载sql语句
-    local sql="LOAD DATA LOCAL INFILE '$data_path/${src_table}_${page_no}.txt' $load_mode INTO TABLE $tar_table"
+    local sql="SET SQL_MODE = '';LOAD DATA LOCAL INFILE '$data_path/${src_table}_${page_no}.txt' $load_mode INTO TABLE $tar_table"
 
     if [[ -n "$tar_columns" ]]; then
         sql="$sql ( $tar_columns )"

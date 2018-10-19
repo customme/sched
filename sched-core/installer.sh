@@ -135,7 +135,8 @@ function install()
             cp -rfp $DIR/sched $INSTALL_DIR
 
             # 授权
-            chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SCHED_HOME/*.sh
+            chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.exp
+            chmod +x $SCHED_HOME/*.sh $SCHED_HOME/plugins/dummy.sh
             find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name "*.sh" | xargs -r chmod +x
         else
             autossh "$admin_passwd" ${admin_user}@${ip} "mkdir -p $INSTALL_DIR"
@@ -143,7 +144,8 @@ function install()
             autoscp "$admin_passwd" $DIR/shell ${admin_user}@${ip}:$INSTALL_DIR
             autoscp "$admin_passwd" $DIR/sched ${admin_user}@${ip}:$INSTALL_DIR
 
-            autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SCHED_HOME/*.sh"
+            autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.exp"
+            autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SCHED_HOME/*.sh $SCHED_HOME/plugins/dummy.sh"
             autossh "$admin_passwd" ${admin_user}@${ip} "find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name '*.sh' | xargs -r chmod +x"
         fi
     done

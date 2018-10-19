@@ -58,7 +58,7 @@ function get_task_timeout()
     INNER JOIN t_task b
     ON a.task_id = b.id
     AND a.task_state = $TASK_STATE_RUNNING
-    AND TIMESTAMPDIFF(MINUTE, a.start_time, NOW()) > b.timeout;
+    AND TIMESTAMPDIFF(SECOND, a.start_time, NOW()) > b.timeout;
     " | execute_meta
 }
 
