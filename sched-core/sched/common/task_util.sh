@@ -3,11 +3,6 @@
 
 source $SCHED_HOME/common/config.sh
 
-# 加载测试环境配置
-if [[ "$LOCAL_IP" =~ 192.168 ]]; then
-    source $SCHED_HOME/common/config-test.sh
-fi
-
 META_DB_URL=$(make_mysql_url $META_DB_HOST $META_DB_USER $META_DB_PASSWD $META_DB_NAME $META_DB_PORT)
 
 
