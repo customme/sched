@@ -207,7 +207,7 @@ function init()
     source $SCHED_HOME/common/config.sh
 
     # 初始化数据
-    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD < $SCHED_HOME/sql/sched.sql
+    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/sql/sched.sql
 
     # 插入服务器数据
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id cluster_id; do
