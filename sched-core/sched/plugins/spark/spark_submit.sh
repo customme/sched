@@ -19,7 +19,7 @@ jdbc_jar=`ls -c $SCHED_HOME/plugins/lib/mysql-connector-java*.jar | head -n 1`
 
 # 默认参数
 submit_user=${submit_user:-spark}
-main_class=${main_class:-org.zc.sched.plugins.spark.TaskExecutor2}
+main_class=${main_class:-org.zc.sched.plugins.spark.TaskExecutor}
 master_url=${master_url:-local}
 deploy_mode=${deploy_mode:-client}
 

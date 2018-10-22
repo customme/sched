@@ -1,7 +1,3 @@
-CREATE DATABASE IF NOT EXISTS `sched` DEFAULT CHARACTER SET utf8;
-
-USE `sched`;
-
 SET @CREATE_BY = 'superz';
 
 DROP TABLE IF EXISTS `t_cluster`;
@@ -96,18 +92,21 @@ CREATE TABLE `t_task_type` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务类型';
 INSERT INTO `t_task_type` (`id`, `create_by`, `create_date`, `code`, `task_executor`, `description`) VALUES 
 (1, @CREATE_BY, NOW(), 'dummy', 'dummy.sh', '空任务，什么也不做，测试用'),
-(2, @CREATE_BY, NOW(), 'mysql2mysql', 'mysql/mysql2mysql.sh', 'MySQL到MySQL数据同步'),
-(3, @CREATE_BY, NOW(), 'mysql2hive', 'hive/mysql2hive.sh', 'MySQL到Hive数据同步'),
-(4, @CREATE_BY, NOW(), 'hive2mysql', 'mysql/hive2mysql.sh', 'Hive到MySQL数据同步'),
-(5, @CREATE_BY, NOW(), 'mysql_exec', 'mysql/exec_sql.sh', '执行MySQL语句'),
-(6, @CREATE_BY, NOW(), 'shell_exec', 'script/exec_shell.sh', '执行Shell脚本'),
-(7, @CREATE_BY, NOW(), 'mysql_loader', 'mysql/file_loader.sh', '文件入库mysql'),
-(8, @CREATE_BY, NOW(), 'saiku_exec', 'saiku/exec_mdx.sh', '模拟Saiku执行MDX'),
-(9, @CREATE_BY, NOW(), 'saiku_refresh', 'saiku/refresh_cube.sh', '刷新Saiku Cube'),
-(10, @CREATE_BY, NOW(), 'mysql_backup', 'mysql/backup.sh', '备份MySQL表到文件'),
-(11, @CREATE_BY, NOW(), 'url_monitor', 'monitor/url_monitor.sh', 'URL监控告警'),
-(12, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务'),
-(13, @CREATE_BY, NOW(), 'hdfs_loader', 'hadoop/hdfs_loader.sh', '本地文件上传至hdfs');
+(2, @CREATE_BY, NOW(), 'shell_exec', 'script/exec_shell.sh', '执行shell脚本'),
+(3, @CREATE_BY, NOW(), 'mysql2mysql', 'mysql/mysql2mysql.sh', 'mysql到mysql数据同步'),
+(4, @CREATE_BY, NOW(), 'mysql_exec', 'mysql/exec_sql.sh', '执行mysql sql语句'),
+(5, @CREATE_BY, NOW(), 'mysql_loader', 'mysql/file_loader.sh', '文件入库mysql'),
+(6, @CREATE_BY, NOW(), 'mysql_backup', 'mysql/backup.sh', '备份mysql表到文件'),
+(7, @CREATE_BY, NOW(), 'mysql2hive', 'hive/mysql2hive.sh', 'mysql到hive数据同步'),
+(8, @CREATE_BY, NOW(), 'hive_exec', 'hive/exec_sql.sh', '执行hive sql语句'),
+(9, @CREATE_BY, NOW(), 'hive2mysql', 'mysql/hive2mysql.sh', 'hive到mysql数据同步'),
+(10, @CREATE_BY, NOW(), 'saiku_exec', 'saiku/exec_mdx.sh', '模拟saiku执行mdx'),
+(11, @CREATE_BY, NOW(), 'saiku_refresh', 'saiku/refresh_cube.sh', '刷新saiku cube'),
+(12, @CREATE_BY, NOW(), 'url_monitor', 'monitor/url_monitor.sh', 'url监控告警'),
+(13, @CREATE_BY, NOW(), 'table_monitor', 'monitor/table_monitor.sh', '表数据量监控告警'),
+(14, @CREATE_BY, NOW(), 'sqoop_exec', 'sqoop/sqoop_exec.sh', '执行sqoop命令'),
+(15, @CREATE_BY, NOW(), 'hdfs_loader', 'hadoop/hdfs_loader.sh', '上传本地文件至hdfs'),
+(16, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务');
 
 DROP TABLE IF EXISTS `t_task`;
 CREATE TABLE `t_task` (
@@ -136,8 +135,8 @@ CREATE TABLE `t_task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务';
 INSERT INTO `t_task` (`id`, `create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
 (1, @CREATE_BY, NOW(), '空任务', '调度系统', 1, 1, 'hour', 1, NOW()),
-(2, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
-(3, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 6, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR);
+(2, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 2, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
+(3, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 2, 1, 'day', 1, CURDATE() + INTERVAL 23 HOUR);
 
 DROP TABLE IF EXISTS `t_task_ext`;
 CREATE TABLE `t_task_ext` (

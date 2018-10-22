@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# 表监控告警
+# 表数据量监控告警
 
 
 BASE_DIR=`pwd`
