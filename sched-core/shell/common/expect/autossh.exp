@@ -24,8 +24,14 @@ if { $argc > 4 } {
     set timeout 30
 }
 
+# 获取命令执行结果
+set returns ";echo $?"
+if { [regexp "\&$" $cmd] } {
+    set returns ""
+}
+
 # 启动ssh进程
-spawn ssh -p $port -o ConnectTimeout=$timeout $userhost "source /etc/profile;source ~/.bash_profile;$cmd;echo $?"
+spawn ssh -p $port -o ConnectTimeout=$timeout $userhost "source /etc/profile;source ~/.bash_profile;$cmd$returns"
 
 # 验证密码
 expect {
