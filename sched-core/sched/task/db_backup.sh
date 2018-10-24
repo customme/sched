@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# 数据库备份
+# 元数据库备份
 
 
 function execute()
@@ -15,6 +15,6 @@ function execute()
     fi
 
     # 备份
-    mysqldump -h$META_DB_HOST -u$META_DB_USER -p$META_DB_PASSWD --opt -R $META_DB_NAME | gzip > $backup_dir/${META_DB_NAME}-$(date +%Y%m%d).gz
+    mysqldump -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD --opt -R $META_DB_NAME | gzip > $backup_dir/${META_DB_NAME}-$(date +%Y%m%d).gz
 }
 execute "$@"

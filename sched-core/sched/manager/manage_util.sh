@@ -62,7 +62,7 @@ function get_tasks()
             WHEN '$TASK_CYCLE_DAY' THEN b.run_time + INTERVAL 1 DAY + INTERVAL TIME(a.start_time) HOUR_SECOND
             WHEN '$TASK_CYCLE_WEEK' THEN b.run_time + INTERVAL 1 WEEK + INTERVAL TIME(a.start_time) HOUR_SECOND
             WHEN '$TASK_CYCLE_MONTH' THEN b.run_time + INTERVAL 1 MONTH + INTERVAL TIME(a.start_time) HOUR_SECOND
-            WHEN '$TASK_CYCLE_HOUR' THEN b.run_time + INTERVAL 1 HOUR + INTERVAL DATE_FORMAT(a.start_time, '%i%s') MINUTE_SECOND
+            WHEN '$TASK_CYCLE_HOUR' THEN b.run_time + INTERVAL 1 HOUR + INTERVAL DATE_FORMAT(a.start_time, '%i:%s') MINUTE_SECOND
             END
           )
         ), '%Y%m%d%H%i%s'
