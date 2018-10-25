@@ -41,9 +41,6 @@ TASK_DATA_DIR=/var/sched/task/data
 # 日志级别
 LOG_LEVEL=$LOG_LEVEL_INFO
 
-# 创建人
-CREATE_BY=superz
-
 
 # 安装环境
 function install_env()
@@ -120,6 +117,9 @@ function install()
 {
     # 出错立即退出
     set -e
+
+    # 拷贝installer.sh到sched目录
+    cp -f $0 $DIR/sched
 
     # 安装sched
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id others; do
@@ -202,6 +202,9 @@ function init()
 {
     # 出错立即退出
     set -e
+
+    # 创建人
+    CREATE_BY=superz
 
     # 加载数据库配置信息
     source $SCHED_HOME/common/config.sh
