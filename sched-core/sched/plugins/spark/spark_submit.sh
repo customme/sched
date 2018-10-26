@@ -28,7 +28,7 @@ function execute()
 {
     extra_params="--master $master_url --deploy-mode $deploy_mode $extra_params"
 
-    run_cmd="spark-submit --class $main_class --driver-class-path $sched_jar:$jdbc_jar:$app_jar:$driver_classpath --jars $sched_jar,$local_jars $extra_params $app_jar $task_id $run_time $app_class"
+    run_cmd="spark-submit --class $main_class --driver-class-path $sched_jar:$jdbc_jar:$app_jar:$driver_classpath --jars $sched_jar,$local_jars,$executor_classpath $extra_params $app_jar $task_id $run_time $app_class"
 
     if [[ `whoami` = $submit_user ]]; then
         $run_cmd

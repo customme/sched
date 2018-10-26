@@ -1,27 +1,15 @@
 package org.zc.sched.util;
 
-import java.io.File;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class ConfigUtil {
 
-	public static final String LINUX_PATH = "/etc/sched/";
-	public static final String WINDOWS_PATH = "../etc/";
-	public static final String CONFIG_FILE = "config.properties";
-
-	private static String CONFIG_FILE_PATH = "./" + CONFIG_FILE;
+	public static final String CONFIG_FILE = "../etc/config.properties";
 
 	private static PropertiesConfiguration config = null;
 
 	static {
-		if (existFile(CONFIG_FILE_PATH)) {
-		} else if (existFile(LINUX_PATH + CONFIG_FILE)) {
-			CONFIG_FILE_PATH = LINUX_PATH + CONFIG_FILE;
-		} else if (existFile(WINDOWS_PATH + CONFIG_FILE)) {
-			CONFIG_FILE_PATH = WINDOWS_PATH + CONFIG_FILE;
-		}
 		try {
 			load();
 		} catch (ConfigurationException e) {
@@ -29,14 +17,10 @@ public class ConfigUtil {
 		}
 	}
 
-	private static boolean existFile(String fileName) {
-		return new File(fileName).exists();
-	}
-
 	private static void load() throws ConfigurationException {
 		config = new PropertiesConfiguration();
 		config.setEncoding("UTF-8");
-		config.load(CONFIG_FILE_PATH);
+		config.load(CONFIG_FILE);
 	}
 
 	public static int getInt(String key) {
@@ -92,7 +76,7 @@ public class ConfigUtil {
 	public synchronized static void save(String key, Object o) {
 		config.setProperty(key, o);
 		try {
-			config.save(CONFIG_FILE_PATH);
+			config.save(CONFIG_FILE);
 			load();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();

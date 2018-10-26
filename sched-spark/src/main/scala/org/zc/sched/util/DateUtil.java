@@ -153,7 +153,7 @@ public class DateUtil {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date.length == 1 ? date[0] : new Date());
 		calendar.add(Calendar.DATE, interval);
-		return new Date(calendar.getTimeInMillis());
+		return calendar.getTime();
 	}
 
 	public static Date nextHour(Date... date) {
@@ -171,7 +171,7 @@ public class DateUtil {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date.length == 1 ? date[0] : new Date());
 		calendar.add(Calendar.HOUR_OF_DAY, interval);
-		return new Date(calendar.getTimeInMillis());
+		return calendar.getTime();
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class DateUtil {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date.length == 1 ? date[0] : new Date());
 		calendar.add(Calendar.MONTH, interval);
-		return new Date(calendar.getTimeInMillis());
+		return calendar.getTime();
 	}
 
 	public static long intervalDays(String datestr, boolean... strict) throws ParseException {
@@ -250,7 +250,7 @@ public class DateUtil {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date.length == 1 ? date[0] : new Date());
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
-		return new Date(calendar.getTimeInMillis());
+		return calendar.getTime();
 	}
 
 	public static Date lastDate(String datestr) throws ParseException {
@@ -271,7 +271,7 @@ public class DateUtil {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date.length == 1 ? date[0] : new Date());
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-		return new Date(calendar.getTimeInMillis());
+		return calendar.getTime();
 	}
 
 	public static int getDays(String datestr) throws ParseException {
