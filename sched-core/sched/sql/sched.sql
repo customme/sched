@@ -106,7 +106,8 @@ INSERT INTO `t_task_type` (`id`, `create_by`, `create_date`, `code`, `task_execu
 (13, @CREATE_BY, NOW(), 'table_monitor', 'monitor/table_monitor.sh', '表数据量监控告警'),
 (14, @CREATE_BY, NOW(), 'sqoop_exec', 'sqoop/sqoop_exec.sh', '执行sqoop命令'),
 (15, @CREATE_BY, NOW(), 'hdfs_loader', 'hadoop/hdfs_loader.sh', '上传本地文件至hdfs'),
-(16, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务');
+(16, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务'),
+(17, @CREATE_BY, NOW(), 'flume_agent', 'flume/start_agent.sh', '启动flume agent');
 
 DROP TABLE IF EXISTS `t_task`;
 CREATE TABLE `t_task` (
