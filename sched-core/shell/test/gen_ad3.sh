@@ -108,6 +108,36 @@ function stat_active()
     }'
 }
 
+# 统计活跃占比
+function stat_active()
+{
+    echo "SELECT prod_id, uv FROM ${DW_NAME}.agg_active_all WHERE active_date = ${the_date//-/};" | exec_sql | awk -F '\t' 'BEGIN{
+        split("'$prods'",prod_arr,",")
+    }{
+        prod[$1]=$2
+    }END{
+        for(i=1;i<=length(prod_arr);i++){
+            active_cnt = prod[prod_arr[i]]
+            if(active_cnt > 0){
+                print active_cnt
+            }else{
+                print 0
+            }
+        }
+    }' | awk '{
+        active_cnt[++i]=$1
+        sum += $1
+    }END{
+        if(sum > 0){
+            size = length(active_cnt)
+            for(i=1;i<size;i++){
+                printf("%s,",active_cnt[i] / sum)
+            }
+            printf("%s",active_cnt[size] / sum)
+        }
+    }'
+}
+
 # 分配广告激活量、点击量、展示量
 function allot_ad()
 {
@@ -140,7 +170,7 @@ function allot_ad()
 
             split("'$prods'",arr_prod,",")
             split("'$ad_pct'",arr_pct,",")
-        } $1 == "'$the_date'" && $3 !~ /^E-commerce1$|^E-commerce$/ {
+        } $1 == "'$the_date'" && $3 !~ /^DS/ {
             sum = 0
             sum1 = 0
             sum2 = 0
@@ -182,11 +212,12 @@ function allot_ad()
             }
         }' $file_income >> $file_ad_cnt
 
-        # 海外广告特殊处理（E-commerce1 E-commerce）
+        # 海外广告特殊处理（以DS开头）
+        # 展示数为0，这里用点击数代替，补充访问日志时用到
         awk -F '\t' 'BEGIN{
             OFS=FS
-        } $1 == "'$the_date'" && $3 ~ /^E-commerce1$|^E-commerce$/ {
-            print $1,shop,$2,$3,$4,$5,$6,$7
+        } $1 == "'$the_date'" && $3 ~ /^DS/ {
+            print $1,"shop",$2,$3,$4,$6,$6,$7
         }' $file_income >> $file_ad_cnt
     done
 }
@@ -237,75 +268,115 @@ function gen_ad1(){
                 for(i in arr){
                     print arr[2],rand()
                 }
-            }' $file_ip |
-            sort -k 2 | head -n 100`
+            }' $FILE_IP |
+            sort -k 2 | head -n 100 | awk '{printf("%s,",$1)}' | sed 's/,$//'`
             if [[ -z "$city_ips" ]]; then
-                echo "WARN: can not find ip for city: $city" >&2
+                log "WARN: can not find ip for city: {$city} {$the_date, $prod_id, $adver, $adname}" >&2
             fi
         fi
 
-        # 生成展示（展示时间 = 访问时间 + 60 ~ 180s）
-        sort -R $file_visit2 | head -n $show_cnt | awk -F '\t' 'BEGIN{
-            OFS=FS
-            srand()
-            if(city != "NULL"){
-                split("'$city_ips'",ips_arr,",")
-                size = length(ips_arr)
-            }
-        }{
-            gsub(/-|:/," ",$5)
-            time1 = mktime($5)
-            time2 = time1 + int(rand() * (180 - 60 + 1) + 60)
-            show_time = strftime("%Y-%m-%d %H:%M:%S",time2)
+        # 海外广告特殊处理（以DS开头）
+        if [[ "$adname" =~ ^DS ]]; then
+            # 直接生成点击（点击时间 = 访问时间 + 60 ~ 180s）
+            sort -R $file_visit2 | head -n $click_cnt | awk -F '\t' 'BEGIN{
+                OFS=FS
+                srand()
+            }{
+                if(NR == 1 && city != "NULL"){
+                    split(city_ips,ips_arr,",")
+                    size = length(ips_arr)
+                }
 
-            # 替换地区 ip
-            the_city = $3
-            the_ip = $4
-            if(city != "NULL" && $3 != city){
-                # 取随机ip段
-                i_ips = int(rand() * size + 1)
-                ips = ips_arr[i_ips]
+                gsub(/-|:/," ",$5)
+                time1 = mktime($5)
+                time2 = time1 + int(rand() * (180 - 60 + 1) + 60)
+                click_time = strftime("%Y-%m-%d %H:%M:%S",time2)
 
-                # 从ip段随机取ip
-                split(ips,ip_arr,":")
-                diff = ip_arr[2] - ip_arr[1]
-                ip = ip_arr[1] + int(rand() * (diff + 1))
-                ipa = rshift(and(ip, 0xFF000000), 24)"."rshift(and(ip, 0xFF0000), 16)"."rshift(and(ip, 0xFF00), 8)"."and(ip, 0xFF)
+                # 替换地区 ip
+                the_city = $3
+                the_ip = $4
+                if(city != "NULL" && $3 != city){
+                    # 取随机ip段
+                    i_ips = int(rand() * size + 1)
+                    ips = ips_arr[i_ips]
 
-                the_city = city
-                the_ip = ipa
-            }
+                    # 从ip段随机取ip
+                    split(ips,ip_arr,":")
+                    diff = ip_arr[2] - ip_arr[1]
+                    ip = ip_arr[1] + int(rand() * (diff + 1))
+                    ipa = rshift(and(ip, 0xFF000000), 24)"."rshift(and(ip, 0xFF0000), 16)"."rshift(and(ip, 0xFF00), 8)"."and(ip, 0xFF)
 
-            print $1,$2,the_city,the_ip,show_time,"'$adver'","'$adname'"
-        }' city="$city" > $file_show1
+                    the_city = city
+                    the_ip = ipa
+                }
 
-        # 生成点击（点击时间 = 展示时间 + 1 ~ 60s）
-        sort -R $file_show1 | head -n $click_cnt | awk -F '\t' 'BEGIN{
-            OFS=FS
-            srand()
-        }{
-            gsub(/-|:/," ",$5)
-            time1 = mktime($5)
-            time2 = time1 + int(rand() * 60 + 1)
-            click_time = strftime("%Y-%m-%d %H:%M:%S",time2)
+                print $1,$2,the_city,the_ip,click_time,"'$adver'","'$adname'"
+            }' city="$city" city_ips="$city_ips" > $file_click1
+        else
+            # 生成展示（展示时间 = 访问时间 + 60 ~ 180s）
+            sort -R $file_visit2 | head -n $show_cnt | awk -F '\t' 'BEGIN{
+                OFS=FS
+                srand()
+            }{
+                if(NR == 1 && city != "NULL"){
+                    split(city_ips,ips_arr,",")
+                    size = length(ips_arr)
+                }
 
-            print $1,$2,$3,$4,click_time,"'$adver'","'$adname'"
-        }' > $file_click1
+                gsub(/-|:/," ",$5)
+                time1 = mktime($5)
+                time2 = time1 + int(rand() * (180 - 60 + 1) + 60)
+                show_time = strftime("%Y-%m-%d %H:%M:%S",time2)
 
-        # 生成激活（激活时间 = 点击时间 + 1 ~ 60s）
-        sort -R $file_click1 | head -n $install_cnt | awk -F '\t' 'BEGIN{
-            OFS=FS
-            srand()
-        }{
-            gsub(/-|:/," ",$5)
-            time1 = mktime($5)
-            time2 = time1 + int(rand() * 60 + 1)
-            install_time = strftime("%Y-%m-%d %H:%M:%S",time2)
+                # 替换地区 ip
+                the_city = $3
+                the_ip = $4
+                if(city != "NULL" && $3 != city){
+                    # 取随机ip段
+                    i_ips = int(rand() * size + 1)
+                    ips = ips_arr[i_ips]
 
-            print $1,$2,$3,$4,install_time,"'$adver'","'$adname'"
-        }' >> $file_install
+                    # 从ip段随机取ip
+                    split(ips,ip_arr,":")
+                    diff = ip_arr[2] - ip_arr[1]
+                    ip = ip_arr[1] + int(rand() * (diff + 1))
+                    ipa = rshift(and(ip, 0xFF000000), 24)"."rshift(and(ip, 0xFF0000), 16)"."rshift(and(ip, 0xFF00), 8)"."and(ip, 0xFF)
 
-        cat $file_show1 >> $file_show
+                    the_city = city
+                    the_ip = ipa
+                }
+
+                print $1,$2,the_city,the_ip,show_time,"'$adver'","'$adname'"
+            }' city="$city" city_ips="$city_ips" > $file_show1
+
+            # 生成点击（点击时间 = 展示时间 + 1 ~ 60s）
+            sort -R $file_show1 | head -n $click_cnt | awk -F '\t' 'BEGIN{
+                OFS=FS
+                srand()
+            }{
+                gsub(/-|:/," ",$5)
+                time1 = mktime($5)
+                time2 = time1 + int(rand() * 60 + 1)
+                click_time = strftime("%Y-%m-%d %H:%M:%S",time2)
+
+                print $1,$2,$3,$4,click_time,"'$adver'","'$adname'"
+            }' > $file_click1
+
+            # 生成激活（激活时间 = 点击时间 + 1 ~ 60s）
+            sort -R $file_click1 | head -n $install_cnt | awk -F '\t' 'BEGIN{
+                OFS=FS
+                srand()
+            }{
+                gsub(/-|:/," ",$5)
+                time1 = mktime($5)
+                time2 = time1 + int(rand() * 60 + 1)
+                install_time = strftime("%Y-%m-%d %H:%M:%S",time2)
+
+                print $1,$2,$3,$4,install_time,"'$adver'","'$adname'"
+            }' >> $file_install
+
+            cat $file_show1 >> $file_show
+        fi
         cat $file_click1 >> $file_click
     done
     IFS=$oIFS
@@ -339,6 +410,7 @@ function gen_ad(){
             prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
             arr_prod=(${prods//,/ })
         fi
+        arr_prod=(${arr_prod[@]} shop)
 
         for prod_id in ${arr_prod[@]}; do
             if [[ `grep "^$the_date" $file_ad_cnt | grep "$prod_id"` ]]; then
@@ -375,6 +447,7 @@ function stat_ad()
             prods=`echo "$the_pct" | awk 'BEGIN{RS="[:,]"} NR % 2 == 1' | tr '\n' ',' | sed 's/,$//'`
             arr_prod=(${prods//,/ })
         fi
+        arr_prod=(${arr_prod[@]} shop)
 
         for prod_id in ${arr_prod[@]}; do
             file_show=$DATADIR/$prod_id/show.$the_date
