@@ -69,6 +69,12 @@ function exec_sql()
     echo "SET NAMES $MYSQL_CHARSET;$sql" | mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USER -p$MYSQL_PASSWD $MYSQL_DB $params
 }
 
+# 初始化
+function init()
+{
+    mkdir -p $TMPDIR
+}
+
 # 导出数据
 function export_data()
 {
@@ -392,8 +398,6 @@ function gen_ad1(){
 
 # 生成广告展示、点击、激活
 function gen_ad(){
-    mkdir -p $TMPDIR
-
     file_visit1=$TMPDIR/visit1
     file_visit2=$TMPDIR/visit2
     file_show1=$TMPDIR/show1
@@ -432,7 +436,7 @@ function gen_ad(){
     done
 
     # 删除临时文件
-    rm -rf $TMPDIR/*
+    rm -f $file_visit1 $file_visit2 $file_show1 $file_click1
 }
 
 # 统计
@@ -501,22 +505,28 @@ function stat_ad()
     # 活跃广告
     # 活跃
     local file_active1=$TMPDIR/active1
-    range_date $start_date $end_date | while read the_date; do
-        find $DATADIR -type d -nowarn -mindepth 1 | while read the_path; do
-            prod_id=`basename $the_path`
-            file_active=$DATADIR/$prod_id/active.$the_date
-            if [[ -s $file_active ]]; then
-                awk -F '\t' 'BEGIN{
-                    OFS=FS
-                }{
-                    count[$2"$"$3]++
-                }END{
-                    for(key in count){
-                        print "'${the_date//-/}'$'$prod_id'$"key,count[key]
-                    }
-                }' $file_active
-            fi
-        done
+#    range_date $start_date $end_date | while read the_date; do
+#        find $DATADIR -type d -nowarn -mindepth 1 | while read the_path; do
+#            prod_id=`basename $the_path`
+#            file_active=$DATADIR/$prod_id/active.$the_date
+#            if [[ -s $file_active ]]; then
+#                awk -F '\t' 'BEGIN{
+#                    OFS=FS
+#                }{
+#                    count[$2"$"$3]++
+#                }END{
+#                    for(key in count){
+#                        print "'${the_date//-/}'$'$prod_id'$"key,count[key]
+#                    }
+#                }' $file_active
+#            fi
+#        done
+#    done > $file_active1
+
+    # 从数据库读取
+    arr_prod=(${PRODS//,/ })
+    for prod_id in "${arr_prod[@]}"; do
+        echo "SELECT CONCAT_WS('$', active_date, '$prod_id', cuscode, city), fact_count FROM $DW_NAME.agg_l_04_active_$prod_id WHERE active_date >= ${start_date//-/} AND active_date <= ${end_date//-/};" | exec_sql
     done > $file_active1
 
     # 广告
@@ -616,6 +626,9 @@ function main()
         file_ad_active=$DATADIR/ad_active.${start_date//-/}-${end_date//-/}
         table_ad_active=fact_ad_active
     fi
+
+    # 初始化
+    log_fn init
 
     # 导出激活量
     log_fn export_data
