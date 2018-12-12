@@ -1,21 +1,21 @@
-SET @CREATE_BY = 'superz';
+SET @CREATE_BY = '#create_by#';
 
 DROP TABLE IF EXISTS `t_cluster`;
 CREATE TABLE `t_cluster` (
-  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `id` tinyint(4) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
   `update_date` datetime COMMENT '更新日期',
-  `name` varchar(64),
-  `description` varchar(255),
+  `name` varchar(64) NOT NULL COMMENT '集群名称',
+  `description` varchar(255) COMMENT '描述',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='集群';
 INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES (1, @CREATE_BY, NOW(), '监控集群');
 
 DROP TABLE IF EXISTS `t_server`;
 CREATE TABLE `t_server` (
-  `id` smallint(6) NOT NULL AUTO_INCREMENT,
+  `id` smallint(6) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -33,7 +33,7 @@ CREATE TABLE `t_server` (
 
 DROP TABLE IF EXISTS `t_db_conn`;
 CREATE TABLE `t_db_conn` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -53,7 +53,7 @@ CREATE TABLE `t_db_conn` (
 
 DROP TABLE IF EXISTS `t_db_type`;
 CREATE TABLE `t_db_type` (
-  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `id` tinyint(4) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -79,7 +79,7 @@ INSERT INTO `t_db_type` (`id`, `create_by`, `create_date`, `code`, `default_port
 
 DROP TABLE IF EXISTS `t_task_type`;
 CREATE TABLE `t_task_type` (
-  `id` tinyint(4) NOT NULL AUTO_INCREMENT,
+  `id` tinyint(4) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -109,11 +109,11 @@ INSERT INTO `t_task_type` (`id`, `create_by`, `create_date`, `code`, `task_execu
 (16, @CREATE_BY, NOW(), 'spark_submit', 'spark/spark_submit.sh', '提交spark任务'),
 (17, @CREATE_BY, NOW(), 'flume_agent', 'flume/start_agent.sh', '启动flume agent'),
 (18, @CREATE_BY, NOW(), 'data_gen', 'data/data_gen.sh', '生成数据'),
-(19, @CREATE_BY, NOW(), 'send_kafka', 'data/send_kafka.sh', '向kafka发送json数据');
+(19, @CREATE_BY, NOW(), 'send_kafka', 'data/send_kafka.sh', '将扁平格式数据转换成json格式并发送到kafka');
 
 DROP TABLE IF EXISTS `t_task`;
 CREATE TABLE `t_task` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -143,7 +143,7 @@ INSERT INTO `t_task` (`id`, `create_by`, `create_date`, `name`, `task_group`, `t
 
 DROP TABLE IF EXISTS `t_task_ext`;
 CREATE TABLE `t_task_ext` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -163,7 +163,7 @@ INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `p
 
 DROP TABLE IF EXISTS `t_task_pool`;
 CREATE TABLE `t_task_pool` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -185,7 +185,7 @@ CREATE TABLE `t_task_pool` (
 
 DROP TABLE IF EXISTS `t_task_link`;
 CREATE TABLE `t_task_link` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) AUTO_INCREMENT,
   `create_by` varchar(50) COMMENT '创建人',
   `create_date` datetime COMMENT '创建日期',
   `update_by` varchar(50) COMMENT '更新人',
@@ -199,7 +199,7 @@ CREATE TABLE `t_task_link` (
 
 DROP TABLE IF EXISTS `t_task_log`;
 CREATE TABLE `t_task_log` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` bigint(20) AUTO_INCREMENT,
   `task_id` int(11) NOT NULL COMMENT '任务ID',
   `run_time` datetime NOT NULL COMMENT '运行时间',
   `seq_no` int(11) COMMENT '流水号',

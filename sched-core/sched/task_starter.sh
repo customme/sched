@@ -36,7 +36,7 @@ function run_task_interval()
     " | execute_meta
 
     # 启动任务运行器
-    nohup $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.$(date +'%Y-%m-%d') 2>&1
+    $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.$(date +'%Y-%m-%d') 2>&1
 }
 
 # 获取子任务并依次启动

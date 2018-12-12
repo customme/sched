@@ -205,7 +205,7 @@ function main()
 
     # 启动任务
     info "Invoke task executor: $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error"
-    nohup $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error
+    $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error
 
     # 判断任务执行结果
     if [[ $? -eq 0 ]]; then

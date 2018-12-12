@@ -23,7 +23,7 @@ source $SCHED_HOME/scheduler/schedule_util.sh
 
 
 # 捕捉kill信号
-trap 'warn "$0 is killed, pid: $$, script will exit soon";unset RUN_MODE' TERM
+trap 'warn "$0 is killed, pid: $$, and will exit after current execution";unset RUN_MODE' TERM
 
 
 # 清理日志文件
@@ -74,8 +74,8 @@ function schedule_interval_task()
     get_task_interval | while read task_id run_time cycle_value timeout; do
         # 启动任务代理
         cur_date=$(date +'%Y-%m-%d')
-        info "Invoke task proxy: nohup $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} 2>&1 &"
-        nohup $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} 2>&1 &
+        info "Invoke task proxy: $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} 2>&1 &"
+        $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} 2>&1 &
     done
 }
 
@@ -86,8 +86,8 @@ function schedule_ready_task()
     get_task_ready | while read task_id run_time last_try; do
         # 启动任务
         cur_date=$(date +'%Y-%m-%d')
-        info "Invoke task runner: nohup $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &"
-        nohup $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &
+        info "Invoke task runner: $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &"
+        $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &
     done
 }
 

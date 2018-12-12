@@ -3,7 +3,7 @@
 # Author: superz
 # Date: 2017-06-20
 # Description: sched集群自动安装程序
-# Dependency: yum autossh autoscp
+# Dependency: yum
 
 
 BASE_DIR=`pwd`
@@ -13,7 +13,7 @@ DIR=`pwd`
 cd - > /dev/null
 
 
-source $DIR/shell/common/include.sh
+source $DIR/shell/common/include.sh 2> /dev/null || source $SHELL_HOME/common/include.sh
 
 
 # 集群配置信息
@@ -31,15 +31,8 @@ INSTALL_DIR=/usr/local
 SHELL_HOME=$INSTALL_DIR/shell
 SCHED_HOME=$INSTALL_DIR/sched
 
-# 调度系统日志文件目录
-SCHED_LOG_DIR=/var/sched/log
-# 任务日志文件目录
-TASK_LOG_DIR=/var/sched/task/log
-# 任务数据文件目录
-TASK_DATA_DIR=/var/sched/task/data
-
-# 日志级别
-LOG_LEVEL=$LOG_LEVEL_INFO
+# 创建人
+CREATE_BY=superz
 
 
 # 安装环境
@@ -48,7 +41,7 @@ function install_env()
     # 出错立即退出
     set -e
     # expect wget
-    yum -y -q install expect
+    yum install -y -q expect
 
     # 出错不要立即退出
     set +e
@@ -160,6 +153,8 @@ function install()
 # 卸载
 function remove()
 {
+    source $DIR/sched/common/config.sh 2> /dev/null || source $SCHED_HOME/common/config.sh
+
     echo "$HOSTS" | while read ip admin_user admin_passwd roles others; do
         if [[ "$ip" = "$LOCAL_IP" ]]; then
             # 删除安装文件
@@ -203,13 +198,11 @@ function init()
     # 出错立即退出
     set -e
 
-    # 创建人
-    CREATE_BY=superz
-
     # 加载数据库配置信息
     source $SCHED_HOME/common/config.sh
 
     # 初始化数据
+    sed -i "s/#create_by#/$CREATE_BY/" $SCHED_HOME/sql/sched.sql
     mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/sql/sched.sql
 
     # 插入服务器数据
@@ -285,8 +278,8 @@ function restart()
     done
 }
 
-# 打印用法
-function print_usage()
+# 用法
+function usage()
 {
     echo "Usage: $0 [-i install<sched/mysql>] [-r remove<sched/all>] [-s start<init/start/stop/restart>] [-v verbose]"
 }
@@ -300,7 +293,7 @@ function admin()
 function main()
 {
     if [[ $# -eq 0 ]]; then
-        print_usage
+        usage
         exit 1
     fi
 
@@ -323,7 +316,7 @@ function main()
             v)
                 LOG_LEVEL=$LOG_LEVEL_DEBUG;;
             ?)
-                print_usage
+                usage
                 exit 1;;
         esac
     done

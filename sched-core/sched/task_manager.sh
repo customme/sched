@@ -1,9 +1,9 @@
 #!/bin/bash
-
+#
 # 任务管理器
-# 1、清理任务池一段时间的历史任务
-# 2、根据任务周期实例化任务到任务池
-# 3、检查状态为“等待”的任务的依赖关系，满足执行条件则更新状态为“就绪”
+# 1.清理任务池一段时间的历史任务
+# 2.根据任务周期实例化任务到任务池
+# 3.检查状态为“等待”的任务的依赖关系，满足执行条件则更新状态为“就绪”
 
 
 BASE_DIR=`pwd`
@@ -24,7 +24,7 @@ source $SCHED_HOME/manager/manage_util.sh
 
 
 # 捕捉kill信号
-trap 'warn "$0 is killed, pid: $$, script will exit soon";unset RUN_MODE' TERM
+trap 'warn "$0 is killed, pid: $$, and will exit after current execution";unset RUN_MODE' TERM
 
 
 # 清理任务管理器日志

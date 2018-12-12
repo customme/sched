@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# 将访问日志转换成json格式并发送到kafka
+# 将扁平格式数据转换成json格式并发送到kafka
 
 
 BASE_DIR=`pwd`
@@ -31,9 +31,6 @@ function execute()
     broker_list=${broker_list:-$BROKER_LIST}
     # topic
     topic=${topic:-$product_code}
-
-    # windows换行符替换成unix
-    sed -i 's/\r\\n/\n/g' $log_path/run_params
 
     # 解析运行时参数
     start_date=`awk -F '=' '$1 == "start_date" {print $2}' $log_path/run_params`
