@@ -145,10 +145,16 @@ function main()
     run_time="$2"
     last_try="${3:-0}"
 
+    # 流水号
+    seq_no=$(date +'%s')
+
     # 判断任务是否存在且正常
     info "Check if exists valid task: $task_id"
     if [[ $(exists_task $task_id) -eq 0 ]]; then
-        error "Can not find valid task by id: $task_id"
+        log_task $LOG_LEVEL_ERROR "Can not find valid task by id: $task_id"
+        task_state=$TASK_STATE_FAILED
+        fail_task
+        update_task
         exit 1
     fi
 
@@ -156,7 +162,10 @@ function main()
     info "Get task executor"
     task_executor=$(get_task_executor $task_id)
     if [[ -z "$task_executor" ]]; then
-        error "Can not find task executor for task: $task_id"
+        log_task $LOG_LEVEL_ERROR "Can not find task executor for task: $task_id"
+        task_state=$TASK_STATE_FAILED
+        fail_task
+        update_task
         exit 1
     fi
 
@@ -188,9 +197,6 @@ function main()
         error "Update task state failed (task_id, run_time) ($task_id, $run_time)"
         exit 1
     fi
-
-    # 流水号
-    seq_no=$(date +'%s')
 
     # 创建任务日志目录
     cur_date=$(date +%Y%m%d)

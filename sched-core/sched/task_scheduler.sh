@@ -57,10 +57,13 @@ function kill_task()
         if [[ -n "$pid" ]]; then
             info "Kill task $pid $pname"
             kill $pid
-        else
-            info "Kill task $task_id $run_time"
-            update_task_instance $task_id $run_time "task_state = $TASK_STATE_KILLED"
         fi
+        while [[ -n "$pid" ]]; do
+            sleep 1
+            pid=`ps -ef | grep "$pname" | grep -v grep | awk '{print $2}'`
+        done
+        info "Task $task_id $run_time is killed"
+        update_task_instance $task_id $run_time "task_state = $TASK_STATE_KILLED"
     done
 }
 
@@ -92,7 +95,11 @@ function schedule_ready_task()
 function execute()
 {
     # 发送心跳
-    send_heartbeat
+    local result=$(send_heartbeat)
+    if [[ $result -ne 1 ]]; then
+        error "Unregistered server (id, ip) ($SERVER_ID, $LOCAL_IP)"
+        exit 1
+    fi
 
     # 清理日志
     clean_log

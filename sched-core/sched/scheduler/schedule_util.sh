@@ -5,9 +5,10 @@ source $SCHED_HOME/scheduler/config.sh
 
 
 # 更新服务器心跳时间
-function send_heartbeat()
+# 返回影响行数
+function update_server()
 {
-    echo "UPDATE t_server SET beat_time = NOW() WHERE id = $SERVER_ID AND ip = '$LOCAL_IP';" | execute_meta
+    echo "UPDATE t_server SET beat_time = NOW() WHERE id = $SERVER_ID AND ip = '$LOCAL_IP';SELECT ROW_COUNT();" | execute_meta
 }
 
 # 获取“时间间隔”任务
@@ -58,7 +59,9 @@ function get_task_timeout()
     INNER JOIN t_task b
     ON a.task_id = b.id
     AND a.task_state = $TASK_STATE_RUNNING
-    AND TIMESTAMPDIFF(SECOND, a.start_time, NOW()) > b.timeout;
+    AND TIMESTAMPDIFF(SECOND, a.start_time, NOW()) > b.timeout
+    AND b.timeout > 0
+    AND b.task_cycle NOT IN ('$TASK_CYCLE_INCESSANT');
     " | execute_meta
 }
 

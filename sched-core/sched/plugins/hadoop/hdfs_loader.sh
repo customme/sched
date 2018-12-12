@@ -14,10 +14,6 @@ source /etc/profile
 source ~/.bash_profile
 
 
-# 默认参数
-hdfs_user=${hdfs_user:-hdfs}
-
-
 # 执行hdfs命令
 function exec_hdfs()
 {
@@ -34,6 +30,9 @@ function exec_hdfs()
 
 function execute()
 {
+    # hdfs用户
+    hdfs_user=${hdfs_user:-hdfs}
+
     # 最小记录数
     if [[ -n "$min_count" ]]; then
         # 检测数据行数

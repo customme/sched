@@ -98,7 +98,8 @@ function get_initial_tasks()
     FROM t_task_pool a 
     INNER JOIN t_task b 
     ON a.task_id = b.id 
-    AND a.task_state = $TASK_STATE_INITIAL;
+    AND a.task_state = $TASK_STATE_INITIAL 
+    AND b.task_status = $TASK_STATUS_NORMAL;
     " | execute_meta
 }
 

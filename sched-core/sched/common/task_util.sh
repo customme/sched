@@ -370,3 +370,12 @@ function get_biz_date()
             ;;
     esac
 }
+
+# 活跃任务运行时参数
+function get_run_params()
+{
+    local task_id="$1"
+    local run_time="$2"
+
+    echo "SELECT IFNULL(run_params, '') FROM t_task_pool WHERE task_id = $task_id AND run_time = STR_TO_DATE('$run_time', '%Y%m%d%H%i%s');" | execute_meta
+}

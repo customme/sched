@@ -20,6 +20,7 @@ readonly TASK_CYCLE_MONTH=month            # 月
 readonly TASK_CYCLE_HOUR=hour              # 小时
 readonly TASK_CYCLE_INTERVAL=interval      # 时间间隔
 readonly TASK_CYCLE_INSTANT=instant        # 即时
+readonly TASK_CYCLE_INCESSANT=incessant    # 不间断
 
 # 业务表类型
 readonly TABLE_TYPE_SIMPLE=0         # 单表

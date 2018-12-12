@@ -48,9 +48,12 @@ function get_task_config()
     redo_flag=${task_instance[2]}
 
     # 获取任务上次运行周期
-    the_time=$(format_time $run_time)
-    local last_cycle=$(get_next_cycle $run_time $task_cycle ago)
-    prev_time=$(format_time $last_cycle)
+    case $task_cycle in
+        $TASK_CYCLE_DAY|$TASK_CYCLE_WEEK|$TASK_CYCLE_MONTH|$TASK_CYCLE_HOUR)
+        the_time=$(format_time $run_time)
+        local last_cycle=$(get_next_cycle $run_time $task_cycle ago)
+        prev_time=$(format_time $last_cycle);;
+    esac
 
     # 获取任务扩展属性
     debug "Get task extended attributes by task id: $task_id, exclude: src_sql, src_mdx, src_urls"
@@ -59,6 +62,13 @@ function get_task_config()
     # 设置任务扩展属性
     debug "Set task extended attributes by source file: $log_path/task.ext"
     source $log_path/task.ext
+
+    # 获取任务运行时参数
+    debug "Get task run params by task id and run time ($task_id, $run_time)"
+    get_run_params $task_id $run_time > $log_path/run_params
+
+    # windows换行符替换成unix
+    sed -i 's/\r\\n/\n/g' $log_path/run_params
 
     # 加载文件
     if [[ -n "$source_file" ]]; then
