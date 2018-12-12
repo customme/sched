@@ -11,7 +11,7 @@ CREATE TABLE `t_cluster` (
   `description` varchar(255) COMMENT '描述',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='集群';
-INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES (1, @CREATE_BY, NOW(), '监控集群');
+INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES (1, @CREATE_BY, NOW(), '调度系统集群');
 
 DROP TABLE IF EXISTS `t_server`;
 CREATE TABLE `t_server` (
@@ -122,7 +122,7 @@ CREATE TABLE `t_task` (
   `task_group` varchar(64) NOT NULL DEFAULT 'default' COMMENT '任务组',
   `type_id` tinyint(4) NOT NULL COMMENT '任务类型ID',
   `task_status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务状态(0:暂停, 1:正常, -1:删除)',
-  `task_cycle` varchar(16) NOT NULL COMMENT '任务周期(day:天, week:周, month:月, hour:小时, interval:时间间隔, instant:即时)',
+  `task_cycle` varchar(16) NOT NULL COMMENT '任务周期(day:天, week:周, month:月, hour:小时, interval:时间间隔, instant:即时, incessant:不间断)',
   `cycle_value` varchar(16) COMMENT '周期值',
   `date_serial` tinyint(1) NOT NULL DEFAULT '0' COMMENT '时间串行(1表示串行)',
   `priority` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务优先级(值越小优先级越高)',
@@ -138,7 +138,7 @@ CREATE TABLE `t_task` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务';
 INSERT INTO `t_task` (`id`, `create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
 (1, @CREATE_BY, NOW(), '空任务', '调度系统', 1, 1, 'hour', 1, NOW() - INTERVAL 1 HOUR),
-(2, @CREATE_BY, NOW(), '任务执行报告', '调度系统', 2, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
+(2, @CREATE_BY, NOW(), '调度系统任务执行报告', '调度系统', 2, 1, 'day', 1, CURDATE() + INTERVAL 1 DAY + INTERVAL 8 HOUR),
 (3, @CREATE_BY, NOW(), '调度系统元数据库备份', '调度系统', 2, 1, 'day', 1, CURDATE() - INTERVAL 1 DAY + INTERVAL 23 HOUR);
 
 DROP TABLE IF EXISTS `t_task_ext`;

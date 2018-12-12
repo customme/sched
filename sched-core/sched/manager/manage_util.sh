@@ -99,7 +99,8 @@ function get_initial_tasks()
     INNER JOIN t_task b 
     ON a.task_id = b.id 
     AND a.task_state = $TASK_STATE_INITIAL 
-    AND b.task_status = $TASK_STATUS_NORMAL;
+    AND b.task_status = $TASK_STATUS_NORMAL 
+    AND b.task_cycle IN ('$TASK_CYCLE_DAY', '$TASK_CYCLE_WEEK', '$TASK_CYCLE_MONTH', '$TASK_CYCLE_HOUR');
     " | execute_meta
 }
 

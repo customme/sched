@@ -80,6 +80,7 @@ function schedule_interval_task()
 }
 
 # 调度状态为“就绪”的任务
+# 任务状态为“失败”或“被杀死”并且已尝试次数小于最大尝试次数
 # 根据服务器的最大并发数和当前并发数
 function schedule_ready_task()
 {
