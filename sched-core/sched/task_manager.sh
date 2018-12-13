@@ -120,8 +120,8 @@ function roll_log()
     fi
 }
 
-# 打印用法
-function print_usage()
+# 用法
+function usage()
 {
     echo "Usage: $0 [-l log level<0:debug/1:info/2:warn/3:error>] [-m run mode<once/loop>]"
 }
@@ -137,7 +137,7 @@ function main()
             m)
                 RUN_MODE="$OPTARG";;
             ?)
-                print_usage
+                usage
                 exit 1;;
         esac
     done
