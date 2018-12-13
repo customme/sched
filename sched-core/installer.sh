@@ -18,11 +18,11 @@ source $DIR/shell/common/include.sh 2> /dev/null || source $SHELL_HOME/common/in
 
 # 集群配置信息
 # ip admin_user admin_passwd roles server_id cluster_id
-HOSTS="10.10.10.61 root 123456 manager,scheduler 1 1
-10.10.10.64 root 123456 scheduler 2 1
-10.10.10.65 root 123456 scheduler 3 1
-10.10.10.66 root 123456 scheduler 4 1
-10.10.10.67 root 123456 scheduler 5 1"
+HOSTS="192.168.1.10 root 9zhitxops manager,scheduler 1 1
+192.168.1.11 root 9zhitxops scheduler 2 1
+192.168.1.15 root 1234567 scheduler 3 2
+192.168.1.16 root 1234567 scheduler 4 2
+192.168.1.17 root 1234567 scheduler 5 2"
 
 # 安装目录
 INSTALL_DIR=/usr/local
@@ -30,6 +30,10 @@ INSTALL_DIR=/usr/local
 # 环境变量
 SHELL_HOME=$INSTALL_DIR/shell
 SCHED_HOME=$INSTALL_DIR/sched
+
+# MySQL yum源安装包
+MYSQL_YUM_RPM=mysql57-community-release-el7-11.noarch.rpm
+MYSQL_YUM_URL=https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm
 
 # 创建人
 CREATE_BY=superz
@@ -76,9 +80,16 @@ function install_mysql()
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id others; do
         if [[ "$ip" = "$LOCAL_IP" ]]; then
             # 安装mysql命令
-            type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client
+            type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client || (
+                test -f $MYSQL_YUM_RPM || wget $MYSQL_YUM_URL
+                yum localinstall -y $MYSQL_YUM_RPM && yum install -y -q mysql-community-client
+            )
         else
-            autossh "$admin_passwd" ${admin_user}@${ip} "type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client"
+            autoscp "$admin_passwd" $MYSQL_YUM_RPM ${admin_user}@${ip}:~
+            autossh "$admin_passwd" ${admin_user}@${ip} "type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client || (
+                test -f $MYSQL_YUM_RPM || wget $MYSQL_YUM_URL
+                yum localinstall -y $MYSQL_YUM_RPM && yum install -y -q mysql-community-client
+            )"
         fi
     done
 }
@@ -110,6 +121,10 @@ function install()
 {
     # 出错立即退出
     set -e
+
+    # dos2unix
+    yum install -y -q dos2unix
+    find . -type f -regex ".*\.sh\|.*\.py\|.*\.exp" | xargs -r dos2unix
 
     # 拷贝installer.sh到sched目录
     cp -f $0 $DIR/sched
@@ -172,6 +187,9 @@ function remove()
             ps aux | egrep 'task_manager|task_scheduler' | grep -v grep | awk '{print $2}' | xargs -r kill
             sleep 5
             ps aux | egrep 'task_manager|task_scheduler' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+
+            # 删除环境变量
+            sed -i '/^# sched config start/,/^# sched config end/d' /etc/profile
         else
             autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $SHELL_HOME $SCHED_HOME"
             autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf /var/log/task_manager.log /var/log/task_scheduler.log $SCHED_LOG_DIR"
@@ -183,6 +201,8 @@ function remove()
             autossh "$admin_passwd" ${admin_user}@${ip} "ps aux | egrep 'task_manager|task_scheduler' | grep -v grep | awk '{print \$2}' | xargs -r kill"
             sleep 5
             autossh "$admin_passwd" ${admin_user}@${ip} "ps aux | egrep 'task_manager|task_scheduler' | grep -v grep | awk '{print \$2}' | xargs -r kill -9"
+
+            autossh "$admin_passwd" ${admin_user}@${ip} "sed -i '/^# sched config start/,/^# sched config end/d' /etc/profile"
         fi
     done
 

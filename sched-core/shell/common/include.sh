@@ -105,15 +105,7 @@ function file_size()
 # 获取本机ip
 function local_ip()
 {
-    local ip=`ifconfig eth0 2> /dev/null | grep "inet addr" | cut -d ":" -f 2 | cut -d " " -f 1`
-    if [[ -z "$ip" ]]; then
-        ip=`ifconfig eno1 2> /dev/null | grep "inet " | awk '{print $2}'`
-        if [[ -z "$ip" ]]; then
-            ip=`ifconfig ens3 2> /dev/null | grep "inet " | awk '{print $2}'`
-        fi
-    fi
-
-    echo $ip
+    /sbin/ifconfig -a | grep inet | grep -Ev "127.0.0.1|inet6" | awk 'NR == 1 {print $2}' | tr -d 'addr:'
 }
 LOCAL_IP=`local_ip`
 

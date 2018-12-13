@@ -96,7 +96,7 @@ function schedule_ready_task()
 function execute()
 {
     # 发送心跳
-    local result=$(send_heartbeat)
+    local result=$(update_server)
     if [[ $result -ne 1 ]]; then
         error "Unregistered server (id, ip) ($SERVER_ID, $LOCAL_IP)"
         exit 1
