@@ -153,7 +153,7 @@ function main()
         info "Script will execute periodically"
 
         while [[ "$RUN_MODE" = "$RUN_MODE_LOOP" ]]; do
-            execute >> $log_file 2>&1
+            execute 2>&1 | grep -v ".*password.*command.*insecure" >> $log_file
 
             roll_log
 
@@ -168,7 +168,7 @@ function main()
     else
         info "Script will execute one time and exit"
 
-        execute
+        execute 2>&1 | grep -v ".*password.*command.*insecure"
     fi
 }
 main "$@"
