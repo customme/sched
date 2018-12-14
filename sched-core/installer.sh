@@ -33,7 +33,7 @@ SCHED_HOME=$INSTALL_DIR/sched
 
 # MySQL yum源安装包
 MYSQL_YUM_RPM=mysql57-community-release-el7-11.noarch.rpm
-MYSQL_YUM_URL=https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm
+MYSQL_YUM_URL=https://repo.mysql.com/$MYSQL_YUM_RPM
 
 # 创建人
 CREATE_BY=superz
@@ -77,11 +77,12 @@ function install_env()
 # 安装mysql命令
 function install_mysql()
 {
+    test -f $MYSQL_YUM_RPM || wget $MYSQL_YUM_URL
+
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id others; do
         if [[ "$ip" = "$LOCAL_IP" ]]; then
             # 安装mysql命令
             type mysql > /dev/null 2>&1 || yum install -y -q mysql-community-client || (
-                test -f $MYSQL_YUM_RPM || wget $MYSQL_YUM_URL
                 yum localinstall -y $MYSQL_YUM_RPM && yum install -y -q mysql-community-client
             )
         else
@@ -222,8 +223,8 @@ function init()
     source $SCHED_HOME/common/config.sh
 
     # 初始化数据
-    sed -i "s/#create_by#/$CREATE_BY/" $SCHED_HOME/sql/sched.sql
-    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/sql/sched.sql
+    sed -i "s/#create_by#/$CREATE_BY/" $SCHED_HOME/doc/sched.sql
+    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/sched.sql
 
     # 插入服务器数据
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id cluster_id; do
