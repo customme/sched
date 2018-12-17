@@ -1,6 +1,21 @@
 #!/bin/bash
 #
-# 备份mysql表到文件
+# Date: 2015-09-26
+# Author: superz
+# Description: 备份mysql表到文件
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_db_id       源数据库id
+#   src_tables      源表名（多个用逗号隔开）
+#   tar_dir         目标文件目录
+#   backup_count    备份文件保留个数
+#   tar_host        目标服务器
+#   tar_user        目标服务器用户
+#   tar_passwd      目标服务器密码
+#   tar_port        目标服务器ssh端口
 
 
 BASE_DIR=`pwd`

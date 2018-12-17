@@ -1,6 +1,18 @@
 #!/bin/bash
 #
-# 启动agent
+# Date: 2018-10-12
+# Author: superz
+# Description: 启动flume agent
+# 环境变量:
+#   FLUME_HOME    flume家目录
+# 调度系统参数
+#   LOG_LEVEL_INFO    日志级别(info)
+# 任务扩展属性:
+#   flume_conf        flume配置文件目录
+#   submit_user       执行flume命令用户
+#   agent_conf        agent配置文件
+#   agent_name        agent名称
+#   log_file          agent日志文件
 
 
 BASE_DIR=`pwd`

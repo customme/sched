@@ -1,6 +1,18 @@
 #!/bin/bash
 #
-# 表数据量监控告警
+# Date: 2015-09-26
+# Author: superz
+# Description: 表数据量监控告警
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_db_id           源数据库id
+#   src_table_name      源表名
+#   src_table_type      源表类型
+#   src_time_columns    源表增量时间字段（多个用逗号隔开）
+#   src_filter          源数据过滤条件
 
 
 BASE_DIR=`pwd`

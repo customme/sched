@@ -1,6 +1,15 @@
 #!/bin/bash
 #
-# url监控告警
+# Date: 2018-01-15
+# Author: superz
+# Description: url监控告警
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_urls     待监控地址(格式为:名称 地址)
+#   try_times    尝试次数
 
 
 BASE_DIR=`pwd`

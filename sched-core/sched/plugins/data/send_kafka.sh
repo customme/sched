@@ -1,6 +1,24 @@
 #!/bin/bash
 #
-# 将扁平格式数据转换成json格式并发送到kafka
+# Date: 2018-10-26
+# Author: superz
+# Description: 将扁平格式数据转换成json格式并发送到kafka
+# 环境变量:
+#   KAFKA_HOME    kafka家目录
+# 调度系统参数
+#   log_path          任务日志目录
+#   LOG_LEVEL_INFO    日志级别(info)
+# 任务扩展属性:
+#   data_dir        扁平格式数据目录
+#   zk_list         zookeeper列表
+#   broker_list     broker列表
+#   topic           topic名称
+#   replica_num     topic副本数
+#   part_num        topic分区数
+#   product_code    产品编码
+# 任务实例参数:
+#   start_date    开始日期
+#   end_date      结束日期
 
 
 BASE_DIR=`pwd`
@@ -32,15 +50,24 @@ function execute()
     # topic
     topic=${topic:-$product_code}
 
-    # 解析运行时参数
+    # 开始日期
     start_date=`awk -F '=' '$1 == "start_date" {print $2}' $log_path/run_params`
     start_date=${start_date:-${run_time:0:8}}
+    # 结束日期
     end_date=`awk -F '=' '$1 == "end_date" {print $2}' $log_path/run_params`
     end_date=${end_date:-$start_date}
 
+    # 副本数
+    replica_num=${replica_num:-2}
+
+    # broker个数
+    broker_num=`echo "$broker_list" | awk -F ',' '{print NF}'`
+    # 分区个数
+    part_num=${part_num:-$broker_num}
+
     # 创建topic
-    log_task $LOG_LEVEL_INFO "$KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor 2 --partitions 3 --topic $topic --zookeeper $zk_list"
-    $KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor 2 --partitions 3 --topic $topic --zookeeper $zk_list
+    log_task $LOG_LEVEL_INFO "$KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor $replica_num --partitions $part_num --topic $topic --zookeeper $zk_list"
+    $KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor $replica_num --partitions $part_num --topic $topic --zookeeper $zk_list
 
     # 转json格式并发送到kafka
     log_task $LOG_LEVEL_INFO "$KAFKA_HOME/bin/kafka-console-producer.sh --broker-list $broker_list --topic $topic"

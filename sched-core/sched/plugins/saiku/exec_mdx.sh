@@ -1,7 +1,28 @@
 #!/bin/bash
 #
-# 模拟saiku执行mdx
-# Dependencies: yum dos2unix
+# Date: 2018-01-15
+# Author: superz
+# Description: 模拟saiku执行mdx
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_db_id          saiku连接id
+#   saiku_path         saiku服务路径
+#   saiku_version      saiku版本(2.x/3.x)
+#   catalog_name       
+#   schema_name        
+#   cube_name          cube名称
+#   src_mdx            待执行mdx
+#   is_refresh         是否先刷新cube(1:刷新)
+#   tar_db_id          目标数据库id
+#   tar_table_name     目标表名
+#   tar_columns        目标表映射字段
+#   tar_load_mode      目标数据装载模式
+#   tar_set_columns    SET col_name=expr,...
+#   stat_column        统计日期字段
+#   source_file        通过source命令引入的文件
 
 
 BASE_DIR=`pwd`
@@ -22,14 +43,14 @@ function get_src_db()
 {
     if [[ -z "$src_db_id" ]]; then
         error "Empty source database id"
-        exit 1
+        return 1
     fi
 
     debug "Get source database by id: $src_db_id"
     src_db=($(get_db $src_db_id))
     if [[ -z "${src_db[@]}" ]]; then
         error "Can not find source database by id: $src_db_id"
-        exit 1
+        return 1
     fi
     debug "Got source database: ${src_db[@]}"
 
@@ -66,7 +87,7 @@ function login_saiku()
     # 判断cookie是否获取成功
     if [[ ! -s $log_path/cookie.tmp ]]; then
         error "Log into saiku failed"
-        exit 1
+        return 1
     fi
 }
 
@@ -99,7 +120,7 @@ function init_query()
         # 判断查询是否创建成功
         if [[ ! -s $log_path/query_result.tmp ]]; then
             error "Create query failed, please check the parameters: {connection=$conn_name&catalog=$catalog_name&schema=$schema_name&cube=$cube_name}"
-            exit 1
+            return 1
         fi
     else
         # saiku3

@@ -1,6 +1,18 @@
 #!/bin/bash
 #
-# 本地文件上传到hdfs任务插件
+# Date: 2015-09-26
+# Author: superz
+# Description: 本地文件上传到hdfs
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_dir      源文件目录
+#   src_file     源文件名(默认为*)
+#   tar_dir      目标文件目录
+#   hdfs_user    hdfs用户(默认为hdfs)
+#   min_count    最小记录数
 
 
 BASE_DIR=`pwd`

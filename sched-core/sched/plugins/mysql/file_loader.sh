@@ -1,6 +1,28 @@
 #!/bin/bash
 #
-# 文件导入mysql
+# Date: 2015-09-15
+# Author: superz
+# Description: 文件导入mysql
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_host           数据文件所在服务器
+#   src_port           服务器ssh端口
+#   src_user           服务器用户名
+#   src_passwd         服务器密码
+#   src_dir            文件所在目录
+#   src_file           文件名
+#   src_field_sep      字段分隔符
+#   delete_file        入库后直接删除文件
+#   file_suffix        入库后修改文件后缀
+#   skip_latest        入库时忽略最新的一个文件
+#   tar_db_id          目标数据库id
+#   tar_table_name     目标表名
+#   tar_columns        目标字段
+#   tar_set_columns    SET col_name=expr,...
+#   tar_load_mode      目标数据装载模式
 
 
 BASE_DIR=`pwd`

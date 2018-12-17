@@ -1,7 +1,16 @@
 #!/bin/bash
 #
-# 刷新Cube
-
+# Date: 2018-01-15
+# Author: superz
+# Description: 模拟saiku刷新Cube
+# 环境变量:
+#   SCHED_HOME    调度系统家目录
+# 调度系统变量
+#   log_path           任务日志目录
+# 任务扩展属性:
+#   src_db_id          saiku连接id
+#   saiku_path         saiku服务路径
+#   saiku_version      saiku版本(2.x/3.x)
 
 BASE_DIR=`pwd`
 REL_DIR=`dirname $0`
@@ -19,14 +28,14 @@ function get_src_db()
 {
     if [[ -z "$src_db_id" ]]; then
         error "Empty source database id"
-        exit 1
+        return 1
     fi
 
     debug "Get source database by id: $src_db_id"
     src_db=($(get_db $src_db_id))
     if [[ -z "${src_db[@]}" ]]; then
         error "Can not find source database by id: $src_db_id"
-        exit 1
+        return 1
     fi
     debug "Got source database: ${src_db[@]}"
 
@@ -48,7 +57,7 @@ function login_saiku()
     # 判断cookie是否获取成功
     if [[ ! -s $log_path/cookie.tmp ]]; then
         error "Log into saiku failed"
-        exit 1
+        return 1
     fi
 }
 
