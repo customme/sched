@@ -11,7 +11,9 @@ CREATE TABLE `t_cluster` (
   `description` varchar(255) COMMENT '描述',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='集群';
-INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES (1, @CREATE_BY, NOW(), '调度系统集群');
+INSERT INTO `t_cluster` (`id`, `create_by`, `create_date`, `name`) VALUES 
+(1, @CREATE_BY, NOW(), '调度系统集群'),
+(2, @CREATE_BY, NOW(), 'Hadoop集群');
 
 DROP TABLE IF EXISTS `t_server`;
 CREATE TABLE `t_server` (
