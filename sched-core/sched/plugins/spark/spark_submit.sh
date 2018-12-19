@@ -6,10 +6,9 @@
 # 环境变量:
 #   SCHED_HOME    调度系统家目录
 # 调度系统参数
-#   task_id           任务ID
-#   run_time          运行时间
-#   log_path          任务日志目录
-#   LOG_LEVEL_INFO    日志级别(info)
+#   task_id     任务ID
+#   run_time    运行时间
+#   log_path    任务日志目录
 # 任务扩展属性:
 #   main_class            应用程序主类
 #   app_jar               应用程序jar
@@ -37,14 +36,13 @@ source ~/.bash_profile
 
 function execute()
 {
-    # 参数解析
     sched_jar=$SCHED_HOME/plugins/spark/lib/sched-spark-${sched_version:-0.0.1}.jar
     jdbc_jar=`ls -c $SCHED_HOME/plugins/lib/mysql-connector-java-*.jar | head -n 1`
 
-    submit_user=${submit_user:-spark}
     main_class=${main_class:-org.zc.sched.plugins.spark.TaskExecutor}
     master_url=${master_url:-local}
     deploy_mode=${deploy_mode:-client}
+    submit_user=${submit_user:-spark}
 
     extra_params="--master $master_url --deploy-mode $deploy_mode $extra_params"
 
