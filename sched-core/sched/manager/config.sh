@@ -13,11 +13,11 @@ DATE_SERIAL=1           # 串行
 TASK_CHECK_INTERVAL=30      # 30秒钟
 
 # 历史任务保留时间
-TASK_KEEP_DAY=60           # 日任务
-TASK_KEEP_WEEK=5           # 周任务
-TASK_KEEP_MONTH=3          # 月任务
-TASK_KEEP_HOUR=360         # 小时任务
-TASK_KEEP_INTERVAL=10      # 时间间隔任务
+TASK_KEEP_DAY=180           # 日任务
+TASK_KEEP_WEEK=52           # 周任务
+TASK_KEEP_MONTH=12          # 月任务
+TASK_KEEP_HOUR=720          # 小时任务
+TASK_KEEP_INTERVAL=90       # 时间间隔任务
 
 # 日志文件保留个数
 LOG_FILE_KEEP_NUM=10
