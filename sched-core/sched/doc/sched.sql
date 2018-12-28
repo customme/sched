@@ -129,7 +129,7 @@ CREATE TABLE `t_task` (
   `date_serial` tinyint(1) NOT NULL DEFAULT '0' COMMENT '时间串行(1表示串行)',
   `priority` tinyint(4) NOT NULL DEFAULT '0' COMMENT '任务优先级(值越小优先级越高)',
   `max_try_times` tinyint(4) NOT NULL DEFAULT '3' COMMENT '最多尝试次数',
-  `timeout` int(11) NOT NULL DEFAULT '1800' COMMENT '超时时间(秒)',
+  `timeout` int(11) NOT NULL DEFAULT '3600' COMMENT '超时时间(秒)',
   `cluster_id` tinyint(4) COMMENT '集群ID',
   `server_id` smallint(6) COMMENT '服务器ID',
   `start_time` datetime NOT NULL COMMENT '开始时间',
