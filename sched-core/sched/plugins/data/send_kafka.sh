@@ -32,8 +32,6 @@ source /etc/profile
 source ~/.bash_profile
 
 
-DATA_DIR=/var/ad/data
-
 ZK_LIST=yygz-65.gzserv.com:2181,yygz-66.gzserv.com:2181,yygz-67.gzserv.com:2181
 
 BROKER_LIST=yygz-65.gzserv.com:9092,yygz-66.gzserv.com:9092,yygz-67.gzserv.com:9092
@@ -42,7 +40,7 @@ BROKER_LIST=yygz-65.gzserv.com:9092,yygz-66.gzserv.com:9092,yygz-67.gzserv.com:9
 function execute()
 {
     # 数据文件目录
-    data_dir=${data_dir:-$DATA_DIR}
+    data_dir=${data_dir:-/var/ad/data}
     # zookeeper
     zk_list=${zk_list:-$ZK_LIST}
     # broker
