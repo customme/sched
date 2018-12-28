@@ -105,6 +105,10 @@ object TaskExecutor extends Log {
     log.info("Get task")
     val task = getTask(taskId, runTime)
     if (task.isDefined) {
+      // 任务实例参数
+      val runParams = task.get.runParams
+      if (!runParams.isEmpty) log.info("Got task run params: " + runParams.mkString("{ ", "\n  ", " }"))
+
       // 获取任务扩展属性
       log.info("Get task extended attributes")
       task.get.taskExt.++=(getTaskExt(task.get))
