@@ -1,16 +1,27 @@
 package org.zc.sched.util;
 
+import java.io.File;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class ConfigUtil {
 
-	public static final String CONFIG_FILE = "../etc/config.properties";
+	public static final String CONFIG_FILE = "config.properties";
+	public static String configPath = "../etc/" + CONFIG_FILE;
 
 	private static PropertiesConfiguration config = null;
 
 	static {
 		try {
+			File file = new File(configPath);
+			if (!file.exists()) {
+				String schedHome = System.getenv("SCHED_HOME");
+				if (schedHome == null || "".equals(schedHome.trim())) {
+					schedHome = "/usr/local/sched";
+				}
+				configPath = schedHome + "/plugins/spark/etc/" + CONFIG_FILE;
+			}
 			load();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
@@ -20,7 +31,7 @@ public class ConfigUtil {
 	private static void load() throws ConfigurationException {
 		config = new PropertiesConfiguration();
 		config.setEncoding("UTF-8");
-		config.load(CONFIG_FILE);
+		config.load(configPath);
 	}
 
 	public static int getInt(String key) {
@@ -76,7 +87,7 @@ public class ConfigUtil {
 	public synchronized static void save(String key, Object o) {
 		config.setProperty(key, o);
 		try {
-			config.save(CONFIG_FILE);
+			config.save(configPath);
 			load();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
