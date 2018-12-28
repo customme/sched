@@ -70,8 +70,8 @@ function execute()
             sh $script_dir/gen_active.sh -g -p $product_code -d $start_date,$end_date -la $extras;;
         visit)
             # 生成访问日志
-            log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date"
-            sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date;;
+            log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date -s"
+            sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date -s;;
         ad)
             # 生成广告展示、点击、激活日志
             log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_ad.sh -ag -d $start_date,$end_date -sl"
