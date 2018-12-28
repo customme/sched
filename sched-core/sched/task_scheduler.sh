@@ -58,10 +58,6 @@ function kill_task()
             info "Kill task $pid $pname"
             kill $pid
         fi
-        while [[ -n "$pid" ]]; do
-            sleep 1
-            pid=`ps -ef | grep "$pname" | grep -v grep | awk '{print $2}'`
-        done
         info "Task $task_id $run_time is killed"
         update_task_instance $task_id $run_time "task_state = $TASK_STATE_KILLED"
     done

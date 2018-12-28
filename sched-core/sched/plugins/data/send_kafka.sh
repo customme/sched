@@ -63,9 +63,15 @@ function execute()
     # 分区个数
     part_num=${part_num:-$broker_num}
 
+    # 出错不要立即退出
+    set +e
+
     # 创建topic
     log_task $LOG_LEVEL_INFO "$KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor $replica_num --partitions $part_num --topic $topic --zookeeper $zk_list"
     $KAFKA_HOME/bin/kafka-topics.sh --create --replication-factor $replica_num --partitions $part_num --topic $topic --zookeeper $zk_list
+
+    # 出错立即退出
+    set -e
 
     # 转json格式并发送到kafka
     log_task $LOG_LEVEL_INFO "$KAFKA_HOME/bin/kafka-console-producer.sh --broker-list $broker_list --topic $topic"
