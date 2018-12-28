@@ -1,6 +1,10 @@
 #!/bin/bash
 #
-# 任务执行报告
+# Date: 2015-10-16
+# Author: superz
+# Description: 生成任务执行报告并发送邮件
+# 调度系统变量
+#   log_path    任务日志目录
 
 
 # 任务运行状态
