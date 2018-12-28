@@ -13,16 +13,13 @@ DIR=`pwd`
 cd - > /dev/null
 
 
-source $DIR/shell/common/include.sh 2> /dev/null || source $SHELL_HOME/common/include.sh
-
-
 # 集群配置信息
 # ip admin_user admin_passwd roles server_id cluster_id
-HOSTS="192.168.1.10 root 9zhitxops manager,scheduler 1 1
-192.168.1.11 root 9zhitxops scheduler 2 1
-192.168.1.15 root 1234567 scheduler 3 2
-192.168.1.16 root 1234567 scheduler 4 2
-192.168.1.17 root 1234567 scheduler 5 2"
+HOSTS="10.10.10.61 root 123456 manager,scheduler 1 1
+10.10.10.64 root 123456 scheduler 2 1
+10.10.10.65 root 123456 scheduler 3 2
+10.10.10.66 root 123456 scheduler 4 2
+10.10.10.67 root 123456 scheduler 5 2"
 
 # 安装目录
 INSTALL_DIR=/usr/local
@@ -37,6 +34,9 @@ MYSQL_YUM_URL=https://repo.mysql.com/$MYSQL_YUM_RPM
 
 # 创建人
 CREATE_BY=superz
+
+
+source $DIR/shell/common/include.sh 2> /dev/null || source $SHELL_HOME/common/include.sh
 
 
 # 安装环境
@@ -146,7 +146,7 @@ function install()
             # 授权
             chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.exp
             chmod +x $SCHED_HOME/*.sh $SCHED_HOME/plugins/dummy.sh
-            find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name "*.sh" | xargs -r chmod +x
+            find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name '*.sh' | xargs -r chmod +x
         else
             autossh "$admin_passwd" ${admin_user}@${ip} "mkdir -p $INSTALL_DIR"
 
@@ -164,6 +164,11 @@ function install()
 
     # 出错不要立即退出
     set +e
+
+    # 安装mysql命令
+    if [[ "$install_cmd" = all ]]; then
+        log_fn install_mysql
+    fi
 }
 
 # 卸载
@@ -299,10 +304,32 @@ function restart()
     done
 }
 
+# 测试
+function testing()
+{
+    # 出错立即退出
+    set -e
+
+    # 加载数据库配置信息
+    if [[ -z "$META_DB_HOST" ]]; then
+        source $SCHED_HOME/common/config.sh
+    fi
+
+    # 测试任务依赖
+    if [[ "$test_cmd" =~ deps ]]; then
+        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/test-deps.sql
+    fi
+
+    # 测试任务插件
+    if [[ "$test_cmd" =~ plugin ]]; then
+        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/test-plugins.sql
+    fi
+}
+
 # 用法
 function usage()
 {
-    echo "Usage: $0 [-i install<sched/mysql>] [-r remove<sched/all>] [-s start<init/start/stop/restart>] [-v verbose]"
+    echo "Usage: $0 [-i install<sched/all>] [-r remove<sched/all>] [-s start<init/start/stop/restart>] [-t testing<deps,plugins>] [-v verbose]"
 }
 
 # 管理
@@ -318,22 +345,21 @@ function main()
         exit 1
     fi
 
-    # -i [sched/mysql] 安装
+    # -i [sched/all] 安装
     # -r [sched/all] 卸载
     # -s [init/start/stop/restart] 初始化/启动/停止/重启
+    # -t [deps,plugins] 测试任务依赖,任务插件
     # -v debug模式
-    while getopts "i:r:s:v" name; do
+    while getopts "i:r:s:t:v" name; do
         case "$name" in
             i)
-                local command="$OPTARG"
-                if [[ "$command" =~ "mysql" ]]; then
-                    mysql_flag=1
-                fi
-                install_flag=1;;
+                install_cmd="$OPTARG";;
             r)
                 remove_cmd="$OPTARG";;
             s)
                 start_cmd="$OPTARG";;
+            t)
+                test_cmd="$OPTARG";;
             v)
                 LOG_LEVEL=$LOG_LEVEL_DEBUG;;
             ?)
@@ -349,12 +375,12 @@ function main()
     [[ $remove_cmd ]] && log_fn remove
 
     # 安装集群
-    [[ $install_flag ]] && log_fn install
-
-    # 安装mysql命令
-    [[ $mysql_flag ]] && log_fn install_mysql
+    [[ $install_cmd ]] && log_fn install
 
     # 启动集群
     [[ $start_cmd ]] && log_fn $start_cmd
+
+    # 测试
+    [[ $test_cmd ]] && log_fn testing
 }
 main "$@"
