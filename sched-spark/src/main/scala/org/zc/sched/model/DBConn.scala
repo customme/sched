@@ -6,7 +6,7 @@ import java.sql.ResultSet
 import org.zc.sched.util.ConfigUtil
 
 case class DBConn(id: Int, dbType: Int, connType: Int, hostname: String, port: Int,
-    username: String, password: String, dbName: String, charset: String) {
+  username: String, password: String, dbName: String, charset: String) {
 
   // 驱动名
   val JDBC_DRIVER_MYSQL = ConfigUtil.getString("jdbc.driver.mysql")
@@ -39,6 +39,7 @@ case class DBConn(id: Int, dbType: Int, connType: Int, hostname: String, port: I
     props.put("password", password)
     props
   }
+
 }
 
 object DBConn {
@@ -68,4 +69,5 @@ object DBConn {
     DBConn(id, rs.getInt("type_id"), rs.getInt("conn_type"), rs.getString("hostname"), rs.getInt("port"),
       rs.getString("username"), rs.getString("password"), rs.getString("db_name"), rs.getString("charset"))
   }
+
 }

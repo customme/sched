@@ -6,6 +6,8 @@ import java.sql.Statement
 import java.sql.ResultSet
 import java.sql.Timestamp
 
+import scala.collection.JavaConversions.propertiesAsScalaMap
+
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -80,6 +82,7 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
 
     DBUtil.closeAll(null, ps, conn)
   }
+
 }
 
 object TaskExecutor extends Log {
@@ -90,39 +93,39 @@ object TaskExecutor extends Log {
 
   def main(args: Array[String]): Unit = {
     if (args.length < 3) {
-      log.error("Invalid arguments")
+      log.error("invalid arguments")
       System.exit(1)
     }
-    log.info(args.mkString("Argument list: { ", ", ", " }"))
+    log.info(args.mkString("argument list: { ", ", ", " }"))
 
+    // 命令行参数
     val taskId = args(0).toInt
     val runTime = args(1)
     val appClass = args(2)
 
+    // 获取数据库连接
+    log.debug("get database connection")
     conn = DBUtil.getConn
 
     // 获取任务
-    log.info("Get task")
+    log.debug("get task")
     val task = getTask(taskId, runTime)
     if (task.isDefined) {
-      // 任务实例参数
-      val runParams = task.get.runParams
-      if (!runParams.isEmpty) log.info("Got task run params: " + runParams.mkString("{ ", "\n  ", " }"))
-
       // 获取任务扩展属性
-      log.info("Get task extended attributes")
       task.get.taskExt.++=(getTaskExt(task.get))
-      log.info("Got task extended attributes: " + task.get.taskExt.mkString("{ ", "\n  ", " }"))
-    }
-
-    DBUtil.closeAll(rs, ps, conn)
-
-    if (task.isDefined) {
-      Class.forName(appClass).getConstructors.head.newInstance(task.get).asInstanceOf[TaskExecutor].run
+      log.info(s"got task: ${task.get.toString}")
     } else {
-      log.error(s"Can not find valid task by id: ${taskId}")
+      log.error(s"can not find valid task by (taskId: ${taskId}, runTime: ${runTime})")
       System.exit(1)
     }
+
+    // 关闭数据库连接
+    log.debug("close database connection")
+    DBUtil.closeAll(rs, ps, conn)
+
+    // 启动任务
+    log.debug("start task")
+    Class.forName(appClass).getConstructors.head.newInstance(task.get).asInstanceOf[TaskExecutor].run
   }
 
   /**
@@ -161,4 +164,5 @@ object TaskExecutor extends Log {
 
     taskExt
   }
+
 }

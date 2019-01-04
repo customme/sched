@@ -5,6 +5,7 @@ import java.sql.ResultSet
 import org.apache.commons.lang3.StringUtils
 
 import org.json4s._
+import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 import com.fasterxml.jackson.core.JsonParser.Feature
 
@@ -25,6 +26,22 @@ case class Task(taskId: Int, runTime: String, taskName: String, taskCycle: Strin
   val theDate = DateUtil.formatDate(theTime)
   val prevDate = DateUtil.formatDate(DateUtil.nextDate(-1, theTime))
   val statDate = prevDate.replaceAll("-", "").toInt
+
+  override def toString = {
+    val json = ("task" ->
+      ("taskId" -> taskId) ~
+      ("runTime" -> runTime) ~
+      ("taskNo" -> taskNo) ~
+      ("taskName" -> taskName) ~
+      ("taskCycle" -> taskCycle) ~
+      ("isFirst" -> isFirst) ~
+      ("redoFlag" -> redoFlag) ~
+      ("taskExt" -> taskExt) ~
+      ("runParams" -> runParams))
+
+    compact(render(json))
+  }
+
 }
 
 object Task {
@@ -58,4 +75,5 @@ object Task {
     Task(taskId, runTime, rs.getString("name"), rs.getString("task_cycle"), rs.getBoolean("is_first"),
       rs.getBoolean("redo_flag"), _runParams)
   }
+
 }
