@@ -224,12 +224,18 @@ function init()
     # 出错立即退出
     set -e
 
+    if [[ -d $DIR/sched ]]; then
+        base_dir=$DIR/sched
+    else
+        base_dir=$SCHED_HOME
+    fi
+
     # 加载数据库配置信息
-    source $SCHED_HOME/common/config.sh
+    source $base_dir/common/config.sh
 
     # 初始化数据
-    sed -i "s/#create_by#/$CREATE_BY/" $SCHED_HOME/doc/sched.sql
-    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/sched.sql
+    sed -i "s/#create_by#/$CREATE_BY/" $base_dir/doc/sched.sql
+    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/sched.sql
 
     # 插入服务器数据
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id cluster_id; do
@@ -310,19 +316,25 @@ function testing()
     # 出错立即退出
     set -e
 
+    if [[ -d $DIR/sched ]]; then
+        base_dir=$DIR/sched
+    else
+        base_dir=$SCHED_HOME
+    fi
+
     # 加载数据库配置信息
     if [[ -z "$META_DB_HOST" ]]; then
-        source $SCHED_HOME/common/config.sh
+        source $base_dir/common/config.sh
     fi
 
     # 测试任务依赖
     if [[ "$test_cmd" =~ deps ]]; then
-        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/test-deps.sql
+        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/test-deps.sql
     fi
 
     # 测试任务插件
     if [[ "$test_cmd" =~ plugin ]]; then
-        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $SCHED_HOME/doc/test-plugins.sql
+        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/test-plugins.sql
     fi
 }
 
