@@ -71,7 +71,7 @@ function schedule_interval_task()
         # 启动任务代理
         cur_date=$(date +'%Y-%m-%d')
         info "Invoke task proxy: $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} 2>&1 &"
-        $SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout 2>&1 | grep -v ".*password.*command.*insecure" >> $SCHED_LOG_DIR/task_proxy.log.${cur_date} &
+        ($SCHED_HOME/task_proxy.sh $task_id $run_time $cycle_value $timeout 2>&1 | grep -v ".*password.*command.*insecure" >> $SCHED_LOG_DIR/task_proxy.log.${cur_date}) &
     done
 }
 
@@ -84,7 +84,7 @@ function schedule_ready_task()
         # 启动任务
         cur_date=$(date +'%Y-%m-%d')
         info "Invoke task runner: $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &"
-        $SCHED_HOME/task_runner.sh $task_id $run_time $last_try 2>&1 | grep -v ".*password.*command.*insecure" >> $SCHED_LOG_DIR/task_runner.log.${cur_date} &
+        ($SCHED_HOME/task_runner.sh $task_id $run_time $last_try 2>&1 | grep -v ".*password.*command.*insecure" >> $SCHED_LOG_DIR/task_runner.log.${cur_date}) &
     done
 }
 
