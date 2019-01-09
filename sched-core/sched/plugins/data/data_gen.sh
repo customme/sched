@@ -48,12 +48,12 @@ function execute()
             # Android ID个数
             number=`awk -F '=' '$1 == "number" {print $2}' $log_path/run_params`
             # 生成Android ID
-            log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_aid.sh -n $number"
+            log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_aid.sh -n $number -lc"
             sh $script_dir/gen_aid.sh -n $number;;
         new)
             # 生成新增用户
             log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_new.sh -g -p $product_code -d $start_date,$end_date -la"
-            sh $script_dir/gen_new.sh -g -p $product_code -d $start_date,$end_date -la;;
+            sh $script_dir/gen_new.sh -g -p $product_code -d $start_date,$end_date -lac;;
         active)
             # 60~日留存
             rate0=`awk -F '=' '$1 == "rate0" {print $2}' $log_path/run_params`
@@ -71,7 +71,7 @@ function execute()
         visit)
             # 生成访问日志
             log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date -s"
-            sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date -s;;
+            sh $script_dir/gen_visit.sh -g -p $product_code -d $start_date,$end_date -ls;;
         ad)
             # 生成广告展示、点击、激活日志
             log_task $LOG_LEVEL_INFO "Invoke script: sh $script_dir/gen_ad.sh -ag -d $start_date,$end_date -sl"
