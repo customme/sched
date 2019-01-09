@@ -10,16 +10,17 @@ import org.json4s.jackson.JsonMethods._
 import com.fasterxml.jackson.core.JsonParser.Feature
 
 import org.zc.sched.util.DateUtil
+import org.zc.sched.constant.TaskConstant
 
 case class Task(taskId: Int, runTime: String, taskName: String, taskCycle: String, isFirst: Boolean,
   redoFlag: Boolean, runParams: Map[String, String]) {
 
-  val taskNo = DateUtil.formatDate(Task.RUNTIME_FORMAT).toLong
+  val taskNo = DateUtil.formatDate(TaskConstant.RUNTIME_FORMAT).toLong
 
   val taskExt: collection.mutable.Map[String, String] = collection.mutable.Map()
 
-  val theTime = DateUtil.getDatetime(runTime, Task.RUNTIME_FORMAT)
-  val prevTime = if (Task.TASK_CYCLE_HOUR.equalsIgnoreCase(taskCycle)) {
+  val theTime = DateUtil.getDatetime(runTime, TaskConstant.RUNTIME_FORMAT)
+  val prevTime = if (TaskConstant.TASK_CYCLE_HOUR.equalsIgnoreCase(taskCycle)) {
     DateUtil.nextHour(-1, theTime)
   } else DateUtil.nextDate(-1, theTime)
 
@@ -45,16 +46,6 @@ case class Task(taskId: Int, runTime: String, taskName: String, taskCycle: Strin
 }
 
 object Task {
-
-  val RUNTIME_FORMAT = "yyyyMMddHHmmss"
-
-  val TASK_CYCLE_DAY = "day"
-  val TASK_CYCLE_WEEK = "week"
-  val TASK_CYCLE_MONTH = "month"
-  val TASK_CYCLE_HOUR = "hour"
-  val TASK_CYCLE_INTERVAL = "interval"
-  val TASK_CYCLE_INSTANT = "instant"
-  val TASK_CYCLE_INCESSANT = "incessant"
 
   def apply(taskId: Int, runTime: String, rs: ResultSet): Task = {
     val runParams = rs.getString("run_params")

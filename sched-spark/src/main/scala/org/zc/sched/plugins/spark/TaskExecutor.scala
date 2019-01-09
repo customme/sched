@@ -17,6 +17,7 @@ import org.zc.sched.util.DBUtil
 import org.zc.sched.util.ConfigUtil
 import org.zc.sched.util.DateUtil
 import org.zc.sched.util.Log
+import org.zc.sched.constant.TaskConstant
 
 abstract class TaskExecutor(task: Task) extends Serializable with Log {
 
@@ -73,7 +74,7 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
     val ps: PreparedStatement = conn.prepareStatement(sql)
 
     ps.setInt(1, task.taskId)
-    ps.setTimestamp(2, new Timestamp(DateUtil.getDatetime(task.runTime, Task.RUNTIME_FORMAT).getTime))
+    ps.setTimestamp(2, new Timestamp(DateUtil.getDatetime(task.runTime, TaskConstant.RUNTIME_FORMAT).getTime))
     ps.setLong(3, task.taskNo)
     ps.setInt(4, level)
     ps.setString(5, content)
@@ -137,7 +138,7 @@ object TaskExecutor extends Log {
       " ON a.id = b.task_id AND a.id = ? AND b.run_time = ?"
     ps = conn.prepareStatement(sql)
     ps.setInt(1, taskId)
-    ps.setTimestamp(2, new Timestamp(DateUtil.getDatetime(runTime, Task.RUNTIME_FORMAT).getTime))
+    ps.setTimestamp(2, new Timestamp(DateUtil.getDatetime(runTime, TaskConstant.RUNTIME_FORMAT).getTime))
 
     rs = ps.executeQuery()
     if (rs.next()) {
