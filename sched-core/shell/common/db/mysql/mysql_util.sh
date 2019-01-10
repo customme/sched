@@ -62,7 +62,7 @@ function mysql_executor()
         log "$db_url [ $sql ]" >> $sql_log_file
     fi
 
-    echo "$sql" | mysql $db_url | mysql_silent
+    echo "$sql" | mysql $db_url
 }
 
 # 生成连接字符串
