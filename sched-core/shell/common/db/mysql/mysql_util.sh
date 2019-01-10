@@ -9,6 +9,12 @@ function mysql_escape()
     sed "s/\('\|\"\)/\\\\\1/g"
 }
 
+# 去掉mysql安全告警
+function mysql_silent()
+{
+    grep -v ".*password.*command.*insecure"
+}
+
 # 转义特殊数据
 # 1、把“NULL”转换成“\N”
 function mysql_data_conv()
@@ -56,7 +62,7 @@ function mysql_executor()
         log "$db_url [ $sql ]" >> $sql_log_file
     fi
 
-    echo "$sql" | mysql $db_url
+    echo "$sql" | mysql $db_url | mysql_silent
 }
 
 # 生成连接字符串

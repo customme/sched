@@ -208,9 +208,6 @@ function main()
     $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error
     status=$?
 
-    # 删除mysql警告日志
-    sed -i '/.*password.*command.*insecure/d' $log_path/task.error
-
     # 判断任务执行结果
     if [[ $status -eq 0 ]]; then
         log_task $LOG_LEVEL_INFO "Task: (task_id, run_time) ($task_id, $run_time) done successfully"
