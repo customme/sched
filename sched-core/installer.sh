@@ -219,6 +219,15 @@ function remove()
     fi
 }
 
+# 执行元数据库sql
+function exec_meta()
+{
+    local sql="${1:-`cat`}"
+    local params="${2:--s -N --local-infile}"
+
+    echo "SET NAMES $META_DB_CHARSET;$sql" | mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME $params
+}
+
 # 初始化
 function init()
 {
@@ -231,17 +240,17 @@ function init()
         base_dir=$SCHED_HOME
     fi
 
-    # 加载数据库配置信息
+    # 加载数据库配置
     source $base_dir/common/config.sh
 
     # 初始化数据
     sed -i "s/#create_by#/$CREATE_BY/" $base_dir/doc/sched.sql
-    mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/sched.sql
+    exec_meta < $base_dir/doc/sched.sql
 
     # 插入服务器数据
     echo "$HOSTS" | while read ip admin_user admin_passwd roles server_id cluster_id; do
         echo "INSERT IGNORE INTO t_server (id, create_by, create_date, cluster_id, ip) VALUES ($server_id, '$CREATE_BY', NOW(), $cluster_id, '$ip');"
-    done | mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME
+    done | exec_meta
 
     # 启动
     start
@@ -323,19 +332,19 @@ function testing()
         base_dir=$SCHED_HOME
     fi
 
-    # 加载数据库配置信息
+    # 加载数据库配置
     if [[ -z "$META_DB_HOST" ]]; then
         source $base_dir/common/config.sh
     fi
 
     # 测试任务依赖
     if [[ "$test_cmd" =~ deps ]]; then
-        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/test-deps.sql
+        exec_meta < $base_dir/doc/test-deps.sql
     fi
 
     # 测试任务插件
     if [[ "$test_cmd" =~ plugin ]]; then
-        mysql -h$META_DB_HOST -P$META_DB_PORT -u$META_DB_USER -p$META_DB_PASSWD $META_DB_NAME < $base_dir/doc/test-plugins.sql
+        exec_meta < $base_dir/doc/test-plugins.sql
     fi
 }
 
