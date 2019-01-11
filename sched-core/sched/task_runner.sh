@@ -199,17 +199,16 @@ function main()
     fi
 
     # 创建任务日志目录
-    cur_date=$(date +%Y%m%d)
+    cur_date=$(date +%Y-%m-%d)
     log_path=$TASK_LOG_DIR/$cur_date/${task_id}-${run_time}
     mkdir -p $log_path
 
     # 启动任务
     info "Invoke task executor: $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error"
     $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error
-    status=$?
 
     # 判断任务执行结果
-    if [[ $status -eq 0 ]]; then
+    if [[ $? -eq 0 ]]; then
         log_task $LOG_LEVEL_INFO "Task: (task_id, run_time) ($task_id, $run_time) done successfully"
         task_state=$TASK_STATE_SUCCESS
         succeed_task

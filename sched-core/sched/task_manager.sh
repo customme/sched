@@ -168,7 +168,7 @@ function main()
     else
         info "Script will execute one time and exit"
 
-        execute 2>&1
+        execute
     fi
 }
 main "$@"

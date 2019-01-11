@@ -81,10 +81,14 @@ function schedule_interval_task()
 function schedule_ready_task()
 {
     get_task_ready | while read task_id run_time last_try; do
-        # 启动任务
+        # 创建任务日志目录
         cur_date=$(date +'%Y-%m-%d')
+        log_path=$TASK_LOG_DIR/$cur_date/${task_id}-${run_time}
+        mkdir -p $log_path
+
+        # 启动任务
         info "Invoke task runner: $SCHED_HOME/task_runner.sh $task_id $run_time $last_try >> $SCHED_LOG_DIR/task_runner.log.${cur_date} 2>&1 &"
-        $SCHED_HOME/task_runner.sh $task_id $run_time $last_try 2>&1 >> $SCHED_LOG_DIR/task_runner.log.${cur_date} &
+        $SCHED_HOME/task_runner.sh $task_id $run_time $last_try 2>&1 >> $log_path/task_runner.log &
     done
 }
 
@@ -171,7 +175,7 @@ function main()
     else
         info "Script will execute one time and exit"
 
-        execute 2>&1
+        execute
     fi
 }
 main "$@"
