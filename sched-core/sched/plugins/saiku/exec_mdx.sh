@@ -66,7 +66,7 @@ function get_src_db()
 # 替换mdx语句中的变量
 function replace_var()
 {
-    sed "s/#the_day#/${the_day}/g;s/#prev_day#/${prev_day}/g;s/#next_day#/${next_day}/g;s/#run_time#/${run_time}/g;s/#prev_day1#/${prev_day1}/g"
+    sed "s/#the_date#/${the_date}/g;s/#prev_date#/${prev_date}/g;s/#next_date#/${next_date}/g;s/#run_time#/${run_time}/g"
 }
 
 # 获取mdx语句
@@ -227,7 +227,7 @@ function execute()
                 error "Can not find statistical column, program do not know how to redo the task"
                 exit 1
             fi
-            execute_tar "DELETE FROM $tar_table WHERE $stat_column = DATE($prev_day)" "-vvv" > $log_path/redo.log
+            execute_tar "DELETE FROM $tar_table WHERE $stat_column = '$prev_date'" "-vvv" > $log_path/redo.log
         fi
 
         # 构建请求参数

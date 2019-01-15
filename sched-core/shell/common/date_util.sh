@@ -1,33 +1,31 @@
 # 日期时间工具
 
 
-# 初始化时间变量
-function init_date()
+# 设置日期时间变量
+function set_datetime()
 {
-    the_day="$1"
-
-    cur_date=$(date +%Y%m%d)
-    cur_datetime=$(date +%Y%m%d%H%M%S)
-
-    if [[ -z "$the_day" ]]; then
-        the_day=$cur_date
+    if [[ -n "$1" ]]; then
+        the_date=$(date +%F -d "$1")
+    else
+        the_date=$(date +%F)
     fi
 
-    the_month=`date +%Y%m -d "$the_day"`
-    the_year=`date +%Y -d "$the_day"`
-    prev_day=`date +%Y%m%d -d "$the_day 1 day ago"`
-    next_day=`date +%Y%m%d -d "$the_day 1 day"`
-    prev_month=`date +%Y%m -d "${the_month}01 1 month ago"`
-    next_month=`date +%Y%m -d "${the_month}01 1 month"`
-    prev_year=`date +%Y -d "${the_year}0101 1 year ago"`
-    next_year=`date +%Y -d "${the_year}0101 1 year"`
+    the_week=$(date +%w -d "$the_date")
+    the_month=${the_date:0:7}
+    the_year=${the_date:0:4}
 
-    the_day1=`date +%Y-%m-%d -d "$the_day"`
-    the_month1=`date +%Y-%m -d "$the_day"`
-    prev_day1=`date +%Y-%m-%d -d "$the_day 1 day ago"`
-    next_day1=`date +%Y-%m-%d -d "$the_day 1 day"`
-    prev_month1=`date +%Y-%m -d "${the_month}01 1 month ago"`
-    next_month1=`date +%Y-%m -d "${the_month}01 1 month"`
+    prev_date=$(date +%F -d "$the_date 1 day ago")
+    next_date=$(date +%F -d "$the_date 1 day")
+    prev_month=$(date +%Y-%m -d "${the_month}-01 1 month ago")
+    next_month=$(date +%Y-%m -d "${the_month}-01 1 month")
+    prev_year=$(date +%Y -d "${the_year}-01-01 1 year ago")
+    next_year=$(date +%Y -d "${the_year}-01-01 1 year")
+
+    local diff=$((1 - ${the_week/0/7}))
+    mon_date=$(date +%F -d "$the_date $diff day")               # 周一
+    sun_date=$(date +%F -d "$mon_date 6 day")                   # 周日
+    first_date="${the_month}-01"                                # 月初
+    last_date=$(date +%F -d "$first_date 1 month 1 day ago")    # 月末
 }
 
 # 生成日期/月份/小时

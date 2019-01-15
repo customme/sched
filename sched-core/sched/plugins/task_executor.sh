@@ -95,8 +95,8 @@ function main()
 
     info "Current working directory: $BASE_DIR, invoke script: $0 $@"
 
-    # 初始化时间变量
-    init_date ${run_time:0:8}
+    # 设置日期时间变量
+    set_datetime ${run_time:0:8}
 
     # 初始化目录
     init_dir

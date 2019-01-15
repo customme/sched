@@ -309,7 +309,7 @@ function get_first_cycle()
 # 解析表名（简单/分表/动态）
 # 1、t_city
 # 2、t_user_{0 100}
-# 3、t_pv_${the_day}
+# 3、t_pv_${the_date}
 function table_parser()
 {
     local table_name="$1"

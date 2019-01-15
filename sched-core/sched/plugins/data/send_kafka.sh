@@ -6,8 +6,8 @@
 # 环境变量:
 #   KAFKA_HOME    kafka家目录
 # 调度系统参数
-#   log_path    任务日志目录
-#   prev_day    run_time前一天
+#   log_path     任务日志目录
+#   prev_date    run_time前一天
 # 任务扩展属性:
 #   data_dir        扁平格式数据目录
 #   zk_list         zookeeper列表
@@ -50,7 +50,7 @@ function execute()
 
     # 开始日期
     start_date=`awk -F '=' '$1 == "start_date" {print $2}' $log_path/run_params`
-    start_date=${start_date:-$prev_day}
+    start_date=${start_date:-$prev_date}
     # 结束日期
     end_date=`awk -F '=' '$1 == "end_date" {print $2}' $log_path/run_params`
     end_date=${end_date:-$start_date}

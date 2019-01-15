@@ -51,7 +51,7 @@ function execute()
         info "Check data amount"
         local row_count=`find $src_dir -maxdepth 1 -type f -name "${src_file:-*}" | xargs -r cat | awk -F '\t' '{
             print $"'$time_index'"
-        }' | grep "$prev_day1 $the_hour" | wc -l`
+        }' | grep "$prev_date $the_hour" | wc -l`
 
         if [[ $row_count -lt $min_count ]]; then
             error "Can not fetch enough data, expected minimum row count: $min_count, but got: $row_count"

@@ -6,8 +6,8 @@
 # 环境变量:
 #   ETL_HOME    etl程序家目录
 # 调度系统变量
-#   log_path    任务日志目录
-#   prev_day    run_time前一天
+#   log_path     任务日志目录
+#   prev_date    run_time前一天
 # 任务扩展属性:
 #   data_type       生成数据类型(aid:Android ID,new:新增用户,active:活跃用户,visit:访问日志,ad:广告展示、点击、激活日志)
 #   script_dir      数据生成脚本目录
@@ -38,7 +38,7 @@ function execute()
 
     # 开始日期
     start_date=`awk -F '=' '$1 == "start_date" {print $2}' $log_path/run_params`
-    start_date=${start_date:-$prev_day}
+    start_date=${start_date:-$prev_date}
     # 结束日期
     end_date=`awk -F '=' '$1 == "end_date" {print $2}' $log_path/run_params`
     end_date=${end_date:-$start_date}
