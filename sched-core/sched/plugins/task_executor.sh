@@ -16,9 +16,9 @@ source $SCHED_HOME/common/task_util.sh
 function init_dir()
 {
     # 任务日志文件目录
-    log_path=$TASK_LOG_DIR/$cur_date/${task_id}-${run_time}
+    log_path=$TASK_LOG_DIR/$(date +%F)/${task_id}-${run_time}
     if [[ ! -d $log_path ]]; then
-        log_path=$TASK_LOG_DIR/$(date +'%Y%m%d' -d "1 day ago")/${task_id}-${run_time}
+        log_path=$TASK_LOG_DIR/$(date +%F -d "1 day ago")/${task_id}-${run_time}
     fi
 
     # 创建任务数据文件目录

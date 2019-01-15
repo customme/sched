@@ -148,6 +148,14 @@ function main()
     # 流水号
     seq_no=$(date +'%s')
 
+    # 创建任务日志目录
+    cur_date=$(date +%Y-%m-%d)
+    log_path=$TASK_LOG_DIR/$cur_date/${task_id}-${run_time}
+    mkdir -p $log_path
+
+    # sql日志
+    sql_log_file=$log_path/task_runner.sql
+
     # 判断任务是否存在且正常
     info "Check if exists valid task: $task_id"
     if [[ $(exists_task $task_id) -eq 0 ]]; then
@@ -197,11 +205,6 @@ function main()
         error "Update task state failed (task_id, run_time) ($task_id, $run_time)"
         exit 1
     fi
-
-    # 创建任务日志目录
-    cur_date=$(date +%Y-%m-%d)
-    log_path=$TASK_LOG_DIR/$cur_date/${task_id}-${run_time}
-    mkdir -p $log_path
 
     # 启动任务
     info "Invoke task executor: $SCHED_HOME/plugins/$task_executor $task_id $run_time $seq_no > $log_path/task.info 2> $log_path/task.error"
