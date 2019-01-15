@@ -12,6 +12,27 @@ source $SHELL_HOME/common/db/mysql/mysql_util.sh
 source $SCHED_HOME/common/task_util.sh
 
 
+# 替换变量
+function replace_var()
+{
+    sed "s/#the_date#/$the_date/g;s/#prev_date#/$prev_date/g;s/#next_date#/$next_date/g;s/#run_time#/$run_time/g;s/#is_first#/$is_first/g"
+}
+
+# 获取任务扩展属性并替换变量
+function get_prop_replace()
+{
+    local task_id="$1"
+    local prop_name="$2"
+
+    debug "Get task extended attribute and replace variables"
+    debug "Replace #the_date# to $the_date"
+    debug "Replace #prev_date# to $prev_date"
+    debug "Replace #next_date# to $next_date"
+    debug "Replace #run_time# to $run_time"
+    debug "Replace #is_first# to $is_first"
+    echo -e `get_prop_value $task_id $prop_name` | replace_var
+}
+
 # 初始化文件目录
 function init_dir()
 {

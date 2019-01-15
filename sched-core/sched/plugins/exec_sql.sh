@@ -16,24 +16,6 @@ source $SHELL_HOME/common/db/db_util.sh
 source $SCHED_HOME/plugins/db_util.sh
 
 
-# 替换sql语句中的变量
-function replace_var()
-{
-    sed "s/#the_date#/${the_date}/g;s/#prev_date#/${prev_date}/g;s/#next_date#/${next_date}/g;s/#run_time#/${run_time}/g;s/#is_first#/${is_first}/g"
-}
-
-# 获取sql语句
-# 替换sql语句中的变量
-function get_sql()
-{
-    debug "Get sql and replace variables to file: $log_path/src_sql.tmp"
-    debug "Replace #the_date# to ${the_date}"
-    debug "Replace #prev_date# to ${prev_date}"
-    debug "Replace #next_date# to ${next_date}"
-    debug "Replace #run_time# to ${run_time}"
-    echo -e `get_prop_value $task_id src_sql` | replace_var > $log_path/src_sql.tmp
-}
-
 # 执行sql语句
 function exec_sql()
 {
@@ -69,7 +51,7 @@ function execute()
 {
     # 获取待执行sql语句
     log_task $LOG_LEVEL_INFO "Get sql to be executed"
-    get_sql
+    get_prop_replace $task_id src_sql > $log_path/src_sql.tmp
 
     # 获取源数据库连接信息
     get_src_db

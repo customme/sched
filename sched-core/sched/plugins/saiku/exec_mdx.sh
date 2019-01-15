@@ -63,20 +63,6 @@ function get_src_db()
     timeout=60
 }
 
-# 替换mdx语句中的变量
-function replace_var()
-{
-    sed "s/#the_date#/${the_date}/g;s/#prev_date#/${prev_date}/g;s/#next_date#/${next_date}/g;s/#run_time#/${run_time}/g"
-}
-
-# 获取mdx语句
-# 替换mdx语句中的变量
-function get_mdx()
-{
-    log_task $LOG_LEVEL_INFO "Get mdx and replace variables"
-    echo -e `get_prop_value $task_id src_mdx` | replace_var > $log_path/src_mdx.tmp
-}
-
 # 登录获取cookie
 function login_saiku()
 {
@@ -186,7 +172,7 @@ function execute()
 {
     # 获取待执行mdx语句
     log_task $LOG_LEVEL_INFO "Get mdx to be executed"
-    get_mdx
+    get_prop_replace $task_id src_mdx > $log_path/src_mdx.tmp
 
     # 获取源数据库连接信息
     get_src_db
