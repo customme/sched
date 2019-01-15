@@ -27,7 +27,6 @@ INSTALL_DIR=/usr/local
 # 环境变量
 SHELL_HOME=$INSTALL_DIR/shell
 SCHED_HOME=$INSTALL_DIR/sched
-ETL_HOME=$INSTALL_DIR/etl
 
 # MySQL yum源安装包
 MYSQL_YUM_RPM=mysql57-community-release-el7-11.noarch.rpm
@@ -180,7 +179,7 @@ function remove()
     echo "$HOSTS" | while read ip admin_user admin_passwd roles others; do
         if [[ "$ip" = "$LOCAL_IP" ]]; then
             # 删除安装文件
-            rm -rf $SHELL_HOME $SCHED_HOME $ETL_HOME
+            rm -rf $SHELL_HOME $SCHED_HOME
             # 删除日志文件
             rm -rf /var/log/task_manager.log /var/log/task_scheduler.log $SCHED_LOG_DIR
             # 删除任务临时文件
@@ -198,7 +197,7 @@ function remove()
             # 删除环境变量
             sed -i '/^# sched config start/,/^# sched config end/d' /etc/profile
         else
-            autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $SHELL_HOME $SCHED_HOME $ETL_HOME"
+            autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $SHELL_HOME $SCHED_HOME"
             autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf /var/log/task_manager.log /var/log/task_scheduler.log $SCHED_LOG_DIR"
             autossh "$admin_passwd" ${admin_user}@${ip} "rm -rf $TASK_LOG_DIR $TASK_DATA_DIR"
 
