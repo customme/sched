@@ -9,19 +9,32 @@ SET @DB_USER = 'root';
 SET @DB_PASSWD = 'mysql';
 SET @DB_CHARSET = 'utf8';
 
+SET @SAIKU_TYPE = 11;
+SET @SAIKU_HOST = '10.10.10.67';
+SET @SAIKU_PORT = 8080;
+SET @SAIKU_CONN_TYPE = 3;
+SET @SAIKU_USER = 'admin';
+SET @SAIKU_PASSWD = 'admin';
+SET @SAIKU_CHARSET = 'utf8';
+
 SET @SERVER_1 = 3;
 SET @SERVER_2 = 4;
+SET @SERVER_3 = 5;
 
 SET @TASK_GROUP = '测试 - 调度系统插件';
 SET @TASK_STATUS = 1;
 
 SET @TASK_TYPE_DUMMY = 1;
 SET @TASK_TYPE_SHELL = 2;
+SET @TASK_TYPE_SAIKU_EXEC = 10;
+SET @TASK_TYPE_SAIKU_REFRESH = 11;
 SET @TASK_TYPE_SPARK = 16;
 SET @TASK_TYPE_FLUME = 17;
 SET @TASK_TYPE_DATA_GEN = 18;
 SET @TASK_TYPE_SEND_KAFKA = 19;
 
+SET @TASK_CYCLE_DAY = 'day';
+SET @TASK_CYCLE_MONTH = 'month';
 SET @TASK_CYCLE_INSTANT = 'instant';
 SET @TASK_CYCLE_INCESSANT = 'incessant';
 
@@ -33,7 +46,7 @@ SET @TASK_STATE_READY = 1;
 
 -- 数据库连接
 INSERT INTO `t_db_conn` (`create_by`, `create_date`, `db_name`, `type_id`, `username`, `password`, `hostname`, `port`, `charset`) VALUES 
-(@CREATE_BY, NOW(), 'ad_dw', @DB_TYPE, @DB_USER, @DB_PASSWD, @DB_HOST, @DB_PORT, @DB_CHARSET);
+(@CREATE_BY, NOW(), 'adv_n', @DB_TYPE, @DB_USER, @DB_PASSWD, @DB_HOST, @DB_PORT, @DB_CHARSET);
 
 INSERT INTO `t_db_conn` (`create_by`, `create_date`, `db_name`, `type_id`, `username`, `password`, `hostname`, `port`, `charset`) VALUES 
 (@CREATE_BY, NOW(), 'ad_dw1', @DB_TYPE, @DB_USER, @DB_PASSWD, @DB_HOST, @DB_PORT, @DB_CHARSET);
@@ -42,6 +55,10 @@ SET @ad_db_id1=(SELECT @@IDENTITY);
 INSERT INTO `t_db_conn` (`create_by`, `create_date`, `db_name`, `type_id`, `username`, `password`, `hostname`, `port`, `charset`) VALUES 
 (@CREATE_BY, NOW(), 'ad_dw2', @DB_TYPE, @DB_USER, @DB_PASSWD, @DB_HOST, @DB_PORT, @DB_CHARSET);
 SET @ad_db_id2=(SELECT @@IDENTITY);
+
+INSERT INTO `t_db_conn` (`create_by`, `create_date`, `db_name`, `type_id`, `conn_type`, `username`, `password`, `hostname`, `port`, `charset`) VALUES 
+(@CREATE_BY, NOW(), 'adv_n', @SAIKU_TYPE, @SAIKU_CONN_TYPE, @SAIKU_USER, @SAIKU_PASSWD, @SAIKU_HOST, @SAIKU_PORT, @SAIKU_CHARSET);
+SET @saiku_db_id=(SELECT @@IDENTITY);
 
 -- 任务/任务扩展属性/任务实例
 INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
@@ -365,3 +382,45 @@ INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `p
 (@CREATE_BY, NOW(), @task_id, 'data_type', 'ad');
 INSERT INTO `t_task_pool` (`create_by`, `create_date`, `task_id`, `run_time`, `task_state`, `run_params`) VALUES 
 (@CREATE_BY, NOW(), @task_id, NOW(), @TASK_STATE_INITIAL, 'start_date=2016-03-02\r\nend_date=2016-03-31');
+
+INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cycle_value`, `cluster_id`, `start_time`) VALUES 
+(@CREATE_BY, NOW(), '添加日期维度', @TASK_GROUP, @TASK_TYPE_SHELL, @TASK_STATUS, @TASK_CYCLE_MONTH, '1', @CLUSTER_SCHED, CURDATE() - INTERVAL (DAY(CURDATE()) - 1) DAY);
+SET @task_id=(SELECT @@IDENTITY);
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), @task_id, 'tar_cmd', 'source $ETL_HOME/common/dim_date.sh'),
+(@CREATE_BY, NOW(), @task_id, 'db_id', @ad_db_id1);
+
+INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `start_time`) VALUES 
+(@CREATE_BY, NOW(), '添加群组维度', @TASK_GROUP, @TASK_TYPE_SHELL, @TASK_STATUS, @TASK_CYCLE_INSTANT, @CLUSTER_SCHED, NOW());
+SET @task_id=(SELECT @@IDENTITY);
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), @task_id, 'tar_cmd', 'source $ETL_HOME/common/dim_cohort.sh'),
+(@CREATE_BY, NOW(), @task_id, 'db_id', @ad_db_id1);
+INSERT INTO `t_task_pool` (`create_by`, `create_date`, `task_id`, `run_time`, `task_state`) VALUES 
+(@CREATE_BY, NOW(), @task_id, NOW(), @TASK_STATE_READY);
+UPDATE t_task a INNER JOIN t_task_pool b ON a.id = b.task_id AND a.id = @task_id SET a.first_time = b.run_time;
+
+INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `server_id`, `start_time`) VALUES 
+(@CREATE_BY, NOW(), '地区昨日新增用户', @TASK_GROUP, @TASK_TYPE_SAIKU_EXEC, @TASK_STATUS, @TASK_CYCLE_DAY, @CLUSTER_HADOOP, @SERVER_3, CONCAT(CURDATE(), ' 06:00:00'));
+SET @task_id=(SELECT @@IDENTITY);
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), @task_id, 'src_db_id', @saiku_db_id),
+(@CREATE_BY, NOW(), @task_id, 'saiku_path', 'saiku/rest/saiku'),
+(@CREATE_BY, NOW(), @task_id, 'catalog_name', '广告平台-国内'),
+(@CREATE_BY, NOW(), @task_id, 'schema_name', '广告平台-国内'),
+(@CREATE_BY, NOW(), @task_id, 'cube_name', 'NewUser'),
+(@CREATE_BY, NOW(), @task_id, 'src_mdx', 'SELECT\r\nNON EMPTY {[Measures].[New User Count]} ON COLUMNS,\r\nNON EMPTY {[Region].[Name].[Name].Members} ON ROWS\r\nFROM [NewUser]\r\nWHERE {CurrentDateMember([Date].[Daily], \'"[Date].[Daily]"\\.yyyy-mm-dd\').Lag(1039)}'),
+(@CREATE_BY, NOW(), @task_id, 'tar_db_id', @ad_db_id1),
+(@CREATE_BY, NOW(), @task_id, 'tar_table_name', 'agg_new_area'),
+(@CREATE_BY, NOW(), @task_id, 'tar_columns', 'area,user_count'),
+(@CREATE_BY, NOW(), @task_id, 'stat_column', 'create_date'),
+(@CREATE_BY, NOW(), @task_id, 'tar_load_mode', 'replace'),
+(@CREATE_BY, NOW(), @task_id, 'is_refresh', '1');
+
+INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `server_id`, `start_time`) VALUES 
+(@CREATE_BY, NOW(), '刷新新增用户Cube', @TASK_GROUP, @TASK_TYPE_SAIKU_REFRESH, @TASK_STATUS, @TASK_CYCLE_DAY, @CLUSTER_HADOOP, @SERVER_3, CONCAT(CURDATE(), ' 07:00:00'));
+SET @task_id=(SELECT @@IDENTITY);
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), @task_id, 'src_db_id', @saiku_db_id),
+(@CREATE_BY, NOW(), @task_id, 'saiku_path', 'saiku/rest/saiku'),
+(@CREATE_BY, NOW(), @task_id, 'saiku_version', '3.16.1');
