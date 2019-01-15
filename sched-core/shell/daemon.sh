@@ -3,8 +3,8 @@
 # 守护进程
 # 用法:
 : '
-SHELL_HOME=/usr/local/script
-SCHED_HOME=/usr/local/schedule
+SHELL_HOME=/usr/local/shell
+SCHED_HOME=/usr/local/sched
 */5 * * * * $SHELL_HOME/daemon.sh $SCHED_HOME/task_manager.sh -m loop >> /var/log/task_manager.log 2>&1
 */5 * * * * $SHELL_HOME/daemon.sh $SCHED_HOME/task_scheduler.sh -m loop >> /var/log/task_scheduler.log 2>&1
 '
