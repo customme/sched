@@ -424,3 +424,19 @@ INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `p
 (@CREATE_BY, NOW(), @task_id, 'src_db_id', @saiku_db_id),
 (@CREATE_BY, NOW(), @task_id, 'saiku_path', 'saiku/rest/saiku'),
 (@CREATE_BY, NOW(), @task_id, 'saiku_version', '3.16.1');
+
+INSERT INTO `t_task` (`create_by`, `create_date`, `name`, `task_group`, `type_id`, `task_status`, `task_cycle`, `cluster_id`, `server_id`, `start_time`) VALUES 
+(@CREATE_BY, NOW(), '读取kafka消息实时更新新增用户 - adv_n', @TASK_GROUP, @TASK_TYPE_SPARK, @TASK_STATUS, @TASK_CYCLE_INCESSANT, @CLUSTER_HADOOP, @SERVER_3, NOW());
+SET @task_id=(SELECT @@IDENTITY);
+INSERT INTO `t_task_ext` (`create_by`, `create_date`, `task_id`, `prop_name`, `prop_value`) VALUES 
+(@CREATE_BY, NOW(), @task_id, 'app_class', 'com.jiuzhi.etl.ad.RealtimeUser'),
+(@CREATE_BY, NOW(), @task_id, 'app_jar', '/usr/local/etl/ad/etl-ad-0.0.1.jar'),
+(@CREATE_BY, NOW(), @task_id, 'executor_classpath', '/usr/hive/current/lib/mysql-connector-java-commercial-5.1.25-bin.jar'),
+(@CREATE_BY, NOW(), @task_id, 'master_url', 'spark://yygz-61.gzserv.com:7077,yygz-64.gzserv.com:7077'),
+(@CREATE_BY, NOW(), @task_id, 'product_code', 'adv_n'),
+(@CREATE_BY, NOW(), @task_id, 'broker_list', '10.10.10.65:9092,10.10.10.66:9092,10.10.10.67:9092'),
+(@CREATE_BY, NOW(), @task_id, 'product_code', 'adv_n'),
+(@CREATE_BY, NOW(), @task_id, 'ad_db_id', @ad_db_id1);
+INSERT INTO `t_task_pool` (`create_by`, `create_date`, `task_id`, `run_time`, `task_state`) VALUES 
+(@CREATE_BY, NOW(), @task_id, NOW(), @TASK_STATE_INITIAL);
+UPDATE t_task a INNER JOIN t_task_pool b ON a.id = b.task_id AND a.id = @task_id SET a.first_time = b.run_time;
