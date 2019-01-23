@@ -28,6 +28,14 @@ case class Task(taskId: Int, runTime: String, taskName: String, taskCycle: Strin
   val prevDate = DateUtil.formatDate(DateUtil.nextDate(-1, theTime))
   val statDate = prevDate.replaceAll("-", "").toInt
 
+  val shortTime = if (Seq(TaskConstant.TASK_CYCLE_DAY, TaskConstant.TASK_CYCLE_WEEK, TaskConstant.TASK_CYCLE_MONTH).contains(taskCycle)) {
+    DateUtil.formatDate(theTime)
+  } else if (TaskConstant.TASK_CYCLE_HOUR.equalsIgnoreCase(taskCycle)) {
+    DateUtil.formatDatetime(theTime).substring(0, 12)
+  } else {
+    DateUtil.formatDatetime(theTime)
+  }
+
   override def toString = {
     val json = ("task" ->
       ("taskId" -> taskId) ~

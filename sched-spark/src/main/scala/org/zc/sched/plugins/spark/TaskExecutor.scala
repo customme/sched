@@ -26,16 +26,11 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
 
   val executorClasspath = task.taskExt.getOrElse(ConfigUtil.getString("spark.executor.classpath"), "")
 
-  val appName = task.taskName + "-" + task.runTime
+  val appName = "${task.taskName} - ${task.shortTime}"
 
-  val sparkConf = new SparkConf()
-    .setAppName(appName)
-    .setExecutorEnv("SPARK_CLASSPATH", executorClasspath)
+  val sparkConf = new SparkConf().setAppName(appName).setExecutorEnv("SPARK_CLASSPATH", executorClasspath)
 
-  lazy val spark = SparkSession
-    .builder()
-    .config(sparkConf)
-    .getOrCreate()
+  lazy val spark = SparkSession.builder.config(sparkConf).getOrCreate()
 
   /**
    * 执行任务
@@ -45,7 +40,10 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
   def run {
     execute
 
-    spark.stop()
+    if (!TaskConstant.TASK_CYCLE_INCESSANT.equals(task.taskCycle)) {
+      log.debug("stop SparkContext")
+      spark.stop()
+    }
   }
 
   /**
