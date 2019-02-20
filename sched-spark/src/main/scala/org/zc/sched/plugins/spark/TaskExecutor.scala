@@ -26,7 +26,7 @@ abstract class TaskExecutor(task: Task) extends Serializable with Log {
 
   val executorClasspath = task.taskExt.getOrElse(ConfigUtil.getString("spark.executor.classpath"), "")
 
-  val appName = "${task.taskName} - ${task.shortTime}"
+  val appName = s"${task.taskName} - ${task.shortTime}"
 
   val sparkConf = new SparkConf().setAppName(appName).setExecutorEnv("SPARK_CLASSPATH", executorClasspath)
 
