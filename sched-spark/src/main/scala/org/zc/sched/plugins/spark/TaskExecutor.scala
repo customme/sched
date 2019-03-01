@@ -21,10 +21,10 @@ import org.zc.sched.constant.TaskConstant
 
 abstract class TaskExecutor(task: Task) extends Serializable with Log {
 
-  val sparkParallelism = ConfigUtil.getInt("spark.parallelism")
+  private val sparkParallelism = ConfigUtil.getInt("spark.parallelism")
   val parallelism = task.taskExt.getOrElse("parallelism", sparkParallelism).toString.toInt
 
-  val executorClasspath = task.taskExt.getOrElse(ConfigUtil.getString("spark.executor.classpath"), "")
+  private val executorClasspath = task.taskExt.getOrElse(ConfigUtil.getString("spark.executor.classpath"), "")
 
   val appName = s"${task.taskName} - ${task.shortTime}"
 
