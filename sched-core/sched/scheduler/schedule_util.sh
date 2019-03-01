@@ -40,11 +40,13 @@ function get_task_children()
 # 4、t_cluster 读
 function get_task_ready()
 {
-    echo "LOCK TABLES t_task_pool WRITE, t_task_pool as a WRITE,
+    echo "SET AUTOCOMMIT = 0;
+    LOCK TABLES t_task_pool WRITE, t_task_pool as a WRITE,
     t_task as b READ LOCAL,
     t_server READ LOCAL, t_server as c READ LOCAL,
     t_cluster as d READ LOCAL;
     CALL p_get_task_ready($SERVER_ID);
+    COMMIT;
     UNLOCK TABLES;
     " | execute_meta
 }
