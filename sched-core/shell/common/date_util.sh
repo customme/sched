@@ -114,3 +114,16 @@ function format_time()
 
     echo `date +'%Y-%m-%d %H:%M' -d "${the_time:0:8} ${the_time:8:4}"`:${the_second:-00}
 }
+
+# 日期间隔天数
+function date_diff()
+{
+    local start_date="$1"
+    local end_date="${2:-$(date +%F)}"
+
+    local start_time=$(date +%s -d "$start_date")
+    local end_time=$(date +%s -d "$end_date")
+    local date_diff=$(((end_time - start_time) / 60 / 60 / 24))
+
+    echo "$date_diff"
+}
