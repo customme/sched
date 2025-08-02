@@ -56,13 +56,13 @@ function install_env()
     set -e
     # 安装autossh autoscp
     if [[ ! -e /usr/bin/autossh ]]; then
-        cp -f $DIR/shell/common/expect/autossh.exp /usr/lib/
-        ln -sf /usr/lib/autossh.exp /usr/bin/autossh
+        cp -f $DIR/shell/common/expect/autossh.tcl /usr/lib/
+        ln -sf /usr/lib/autossh.tcl /usr/bin/autossh
         chmod +x /usr/bin/autossh
     fi
     if [[ ! -e /usr/bin/autoscp ]]; then
-        cp -f $DIR/shell/common/expect/autoscp.exp /usr/lib/
-        ln -sf /usr/lib/autoscp.exp /usr/bin/autoscp
+        cp -f $DIR/shell/common/expect/autoscp.tcl /usr/lib/
+        ln -sf /usr/lib/autoscp.tcl /usr/bin/autoscp
         chmod +x /usr/bin/autoscp
     fi
 
@@ -125,7 +125,7 @@ function install()
 
     # dos2unix
     yum install -y -q dos2unix
-    find . -type f -regex ".*\.sh\|.*\.py\|.*\.exp" | xargs -r dos2unix
+    find . -type f -regex ".*\.sh\|.*\.py\|.*\.tcl" | xargs -r dos2unix
 
     # 拷贝installer.sh到sched目录
     cp -f $0 $DIR/sched
@@ -144,7 +144,7 @@ function install()
             cp -rfp $DIR/sched $INSTALL_DIR
 
             # 授权
-            chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.exp
+            chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.tcl
             chmod +x $SCHED_HOME/*.sh $SCHED_HOME/plugins/dummy.sh
             find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name '*.sh' | xargs -r chmod +x
         else
@@ -153,7 +153,7 @@ function install()
             autoscp "$admin_passwd" $DIR/shell ${admin_user}@${ip}:$INSTALL_DIR
             autoscp "$admin_passwd" $DIR/sched ${admin_user}@${ip}:$INSTALL_DIR
 
-            autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.exp"
+            autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SHELL_HOME/daemon.sh $SHELL_HOME/common/mail_sender.py $SHELL_HOME/common/sms_sender.sh $SHELL_HOME/common/expect/*.tcl"
             autossh "$admin_passwd" ${admin_user}@${ip} "chmod +x $SCHED_HOME/*.sh $SCHED_HOME/plugins/dummy.sh"
             autossh "$admin_passwd" ${admin_user}@${ip} "find $SCHED_HOME/plugins -mindepth 2 -maxdepth 2 -type f -name '*.sh' | xargs -r chmod +x"
         fi
@@ -214,7 +214,7 @@ function remove()
 
     # 删除本地autossh autoscp
     if [[ "$remove_cmd" = all ]]; then
-        rm -f /usr/lib/autossh.exp /usr/lib/autoscp.exp /usr/bin/autossh /usr/bin/autoscp
+        rm -f /usr/lib/autossh.tcl /usr/lib/autoscp.tcl /usr/bin/autossh /usr/bin/autoscp
     fi
 }
 

@@ -5,7 +5,7 @@
 
 # 参数判断
 if { $argc < 3 } {
-    send_error "Usage: ./autossh password \[user@]host cmd \[port] \[timeout]\n"
+    send_error "Usage: ./autossh password \[user@]host cmd \[port] \[timeout] \[options]\n"
     exit 1
 }
 
@@ -31,7 +31,7 @@ if { [regexp "\&$" $cmd] } {
 }
 
 # 启动ssh进程
-spawn ssh -p $port -o ConnectTimeout=$timeout $userhost "source /etc/profile;source ~/.bash_profile;$cmd$returns"
+spawn ssh -p $port -o ConnectTimeout=$timeout $options $userhost "source /etc/profile;$cmd$returns"
 
 # 验证密码
 expect {

@@ -78,9 +78,9 @@ function mark_done()
     else
         file_name=`basename $file_name`
         if [[ $delete_file -eq 1 ]]; then
-            $SHELL_HOME/common/expect/autossh.exp "$src_passwd" $src_user@$src_host "rm -f $src_dir/$file_name"
+            $SHELL_HOME/common/expect/autossh.tcl "$src_passwd" $src_user@$src_host "rm -f $src_dir/$file_name"
         else
-            $SHELL_HOME/common/expect/autossh.exp "$src_passwd" $src_user@$src_host "mv -f $src_dir/$file_name $src_dir/${file_name}${file_suffix}"
+            $SHELL_HOME/common/expect/autossh.tcl "$src_passwd" $src_user@$src_host "mv -f $src_dir/$file_name $src_dir/${file_name}${file_suffix}"
         fi
     fi
 }
@@ -130,7 +130,7 @@ function execute()
     else
         # 获取文件
         log_task $LOG_LEVEL_INFO "Fetch files from remote host: $src_host"
-        $SHELL_HOME/common/expect/autoscp.exp "$src_passwd" $src_user@$src_host:$src_dir/"${src_file:-*}" $data_path
+        $SHELL_HOME/common/expect/autoscp.tcl "$src_passwd" $src_user@$src_host:$src_dir/"${src_file:-*}" $data_path
 
         log_task $LOG_LEVEL_INFO "Find files to be load"
         if [[ $skip_latest -eq 1 ]]; then

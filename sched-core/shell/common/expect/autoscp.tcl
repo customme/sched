@@ -5,7 +5,7 @@
 
 # 参数判断
 if { $argc < 3 } {
-    send_error "Usage: ./autoscp password \[user@host:]src_file \[user@host:]tar_file \[port] \[timeout]\n"
+    send_error "Usage: ./autoscp password \[user@host:]src_file \[user@host:]tar_file \[port] \[timeout] \[options]\n"
     exit 1
 }
 
@@ -25,7 +25,7 @@ if { $argc > 4 } {
 }
 
 # 启动scp进程
-spawn scp -P $port -o ConnectTimeout=$timeout -rp $src_file $tar_file
+spawn scp -P $port -o ConnectTimeout=$timeout -rp $options $src_file $tar_file
 
 # 验证密码
 expect {

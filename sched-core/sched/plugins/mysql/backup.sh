@@ -65,15 +65,15 @@ function execute()
         tar_port=${tar_port:-22}
 
         # 创建目录
-        $SHELL_HOME/common/expect/autossh.exp "$tar_passwd" "${tar_user}@${tar_host}" "mkdir -p $tar_dir" $tar_port
+        $SHELL_HOME/common/expect/autossh.tcl "$tar_passwd" "${tar_user}@${tar_host}" "mkdir -p $tar_dir" $tar_port
 
         for src_table in ${src_tables//,/ }; do
             # 复制数据到远程服务器
-            $SHELL_HOME/common/expect/autoscp.exp "$tar_passwd" "$data_path/${src_table}.${run_time}.gz" "${tar_user}@${tar_host}:${tar_dir}" $tar_port
+            $SHELL_HOME/common/expect/autoscp.tcl "$tar_passwd" "$data_path/${src_table}.${run_time}.gz" "${tar_user}@${tar_host}:${tar_dir}" $tar_port
 
             # 删除历史备份
             debug "Adjust backup files to proper count"
-            $SHELL_HOME/common/expect/autossh.exp "$tar_passwd" "${tar_user}@${tar_host}" "ls -c $tar_dir/${src_table}.*.gz | sed \"1,${backup_count} d\" | xargs -r rm -f" $tar_port
+            $SHELL_HOME/common/expect/autossh.tcl "$tar_passwd" "${tar_user}@${tar_host}" "ls -c $tar_dir/${src_table}.*.gz | sed \"1,${backup_count} d\" | xargs -r rm -f" $tar_port
 
             # 删除本地数据
             rm -f $data_path/${src_table}.${run_time}.gz

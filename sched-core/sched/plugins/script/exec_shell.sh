@@ -47,7 +47,7 @@ function execute()
         source $log_path/tar_cmd.tmp
     else
         log_task "Target host: ${tar_user}@${tar_host} $tar_passwd"
-        $SHELL_HOME/common/expect/autossh.exp "$tar_passwd" "${tar_user}@${tar_host}" `cat $log_path/tar_cmd.tmp` ${tar_port:-$SSH_PORT}
+        $SHELL_HOME/common/expect/autossh.tcl "$tar_passwd" "${tar_user}@${tar_host}" `cat $log_path/tar_cmd.tmp` ${tar_port:-$SSH_PORT}
     fi
     log_task $LOG_LEVEL_INFO "Execute command end"
 }
